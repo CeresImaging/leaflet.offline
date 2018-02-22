@@ -36,6 +36,8 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
     lengthToBeSaved: null,
     lengthSaved: null,
     lengthLoaded: null,
+    lengthProcessed: null,
+    lengthFailed: null,
     _tilesforSave: null,
   },
   /**
@@ -189,6 +191,8 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
   _resetStatus(tiles) {
     this.status = {
       lengthLoaded: 0,
+      lengthProcessed: 0,
+      lengthFailed: 0,
       lengthToBeSaved: tiles.length,
       lengthSaved: 0,
       _tilesforSave: tiles,
@@ -209,16 +213,33 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
     xhr.responseType = 'blob';
     xhr.send();
     xhr.onreadystatechange = () => {
-      if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
-        self.status.lengthLoaded += 1;
-        self._saveTile(tileUrl.key, xhr.response);
-        if (self.status._tilesforSave.length > 0) {
-          self._loadTile();
-          self._baseLayer.fire('loadtileend', self.status);
-        } else {
-          self._baseLayer.fire('loadtileend', self.status);
-          if (self.status.lengthLoaded === self.status.lengthToBeSaved) {
-            self._baseLayer.fire('loadend', self.status);
+      if (xhr.readyState === XMLHttpRequest.DONE) {
+        if (xhr.status === 200) {
+          console.log('[leaflet.offline] TILE LOADED')
+          self.status.lengthLoaded += 1;
+          self.status.lengthProcessed += 1;
+          self._saveTile(tileUrl.key, xhr.response);
+          if (self.status._tilesforSave.length > 0) {
+            self._loadTile();
+            self._baseLayer.fire('loadtileend', self.status);
+          } else {
+            self._baseLayer.fire('loadtileend', self.status);
+            // TODO: might need to chagne this to `lengthProcessed`
+            // if (self.status.lengthLoaded === self.status.lengthToBeSaved) {
+            if (self.status.lengthProcessed === self.status.lengthToBeSaved) {
+              self._baseLayer.fire('loadend', self.status);
+            }
+          }
+        }
+
+        if (xhr.status >= 400) {
+          console.log('[leaflet.offline] TILE FAILED!!!')
+          self.status.lengthProcessed += 1;
+          self.status.lengthFailed += 1;
+          self._baseLayer.fire('loadtilefailed', self.status);
+          if (self.status._tilesforSave.length > 0) {
+            self._loadTile();
+            self._baseLayer.fire('loadtileend', self.status);
           }
         }
       }
@@ -236,6 +257,7 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
     localforage.removeItem(tileUrl).then(() => {
       localforage.setItem(tileUrl, blob).then(() => {
         self.status.lengthSaved += 1;
+        self.status.lengthProcessed += 1;
         self._baseLayer.fire('savetileend', self.status);
         if (self.status.lengthSaved === self.status.lengthToBeSaved) {
           self._baseLayer.fire('saveend', self.status);
@@ -280,4 +302,13 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
 * @property {function} [options.confirmRemoval] function called before confirm, default null
 * @return {ControlSaveTiles}
 */
-L.control.savetiles = (baseLayer, options) => new ControlSaveTiles(baseLayer, options);
+
+console.log('[leaflet.offline] BINDING SAVE TILEZ!!! @@@@@')
+
+// FIXME: in 1.0.X this doesn't share the global Leaflet properly
+//  - probably a `webpack` thing
+//  - @see https://github.com/webpack/docs/wiki/shimming-modules
+// L.control.savetiles = (baseLayer, options) => new ControlSaveTiles(baseLayer, options);
+L.control.savetiles = savetiles
+
+console.log('[leaflet.offline] BOUND SAVE TIEZ', L.control.savetiles)

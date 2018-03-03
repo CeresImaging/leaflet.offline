@@ -52,6 +52,8 @@
     "sinon": "^4.1.4"
   },
   "dependencies": {
+    "geojson-bbox": "0.0.0",
+    "geojson-utils": "^1.1.0",
     "leaflet": "^1.2.0",
     "localforage": "^1.5.5"
   }

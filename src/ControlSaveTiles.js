@@ -1,4 +1,5 @@
 import L from 'leaflet';
+import geoBox from 'geojson-bbox'
 import localforage from './localforage';
 
 /**
@@ -58,7 +59,7 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
    */
   setStorageSize(callback) {
     const self = this;
-    if (this.status.storagesize) {
+    if (this.status.storagesize && callback instanceof Function) {
       callback(this.status.storagesize);
       return;
     }
@@ -143,6 +144,8 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
    * @return {void}
    */
   _saveTiles() {
+    console.log('[leaflet.offline] about to save tiles')
+
     let bounds;
     const self = this;
     let tiles = [];
@@ -165,14 +168,25 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
       zoomlevels = this.options.zoomlevels || [this._map.getZoom()];
     }
 
+    // TODO: if a shape is provided use those bounds instead (@see https://github.com/geosquare/geojson-bbox)
     const latlngBounds = this.options.bounds || this._map.getBounds();
 
+    console.log('[leaflet.offline] iterating through zoom levels', zoomlevels.length)
+
     for (const i in zoomlevels) {
-      bounds = L.bounds(
-        this._map.project(latlngBounds.getNorthWest(), zoomlevels[i]),
-        this._map.project(latlngBounds.getSouthEast(), zoomlevels[i]),
-      );
-      tiles = tiles.concat(this._baseLayer.getTileUrls(bounds, zoomlevels[i]));
+      // bounds = L.bounds(
+      //   this._map.project(latlngBounds.getNorthWest(), zoomlevels[i]),
+      //   this._map.project(latlngBounds.getSouthEast(), zoomlevels[i]),
+      // );
+      // console.log('[leaflet.offline] bounds at zoom level', bounds, zoomlevels[i])
+      // const tileUrls = this._baseLayer.getTileUrls(bounds, zoomlevels[i])
+      //
+      // const tileUrls = this._baseLayer.getTileUrls(latlngBounds, zoomlevels[i])
+      const tileUrls = this._baseLayer.getTileUrlsInShapes(this.options.shapes, zoomlevels[i])
+
+      console.log(`[leaflet.offline] adding tile URLs for zoom level ${zoomlevels[i]}`, tileUrls, tileUrls.length)
+      tiles = tiles.concat(tileUrls)
+      // tiles = tiles.concat(this._baseLayer.getTileUrls(bounds, zoomlevels[i]));
     }
     this._resetStatus(tiles);
     const succescallback = () => {
@@ -257,13 +271,15 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
     localforage.removeItem(tileUrl).then(() => {
       localforage.setItem(tileUrl, blob).then(() => {
         self.status.lengthSaved += 1;
-        self.status.lengthProcessed += 1;
+        //self.status.lengthProcessed += 1;
         self._baseLayer.fire('savetileend', self.status);
+        console.log('[leaflet.offline] saved tile url @@@@@@@@@@@', tileUrl, self.status)
         if (self.status.lengthSaved === self.status.lengthToBeSaved) {
           self._baseLayer.fire('saveend', self.status);
           self.setStorageSize();
         }
       }).catch((err) => {
+        console.log('[leaflet.offline] ERROR', err)
         throw new Error(err);
       });
     }).catch((err) => {
@@ -308,7 +324,6 @@ console.log('[leaflet.offline] BINDING SAVE TILEZ!!! @@@@@')
 // FIXME: in 1.0.X this doesn't share the global Leaflet properly
 //  - probably a `webpack` thing
 //  - @see https://github.com/webpack/docs/wiki/shimming-modules
-// L.control.savetiles = (baseLayer, options) => new ControlSaveTiles(baseLayer, options);
-L.control.savetiles = savetiles
+L.control.savetiles = (baseLayer, options) => new ControlSaveTiles(baseLayer, options);
 
 console.log('[leaflet.offline] BOUND SAVE TIEZ', L.control.savetiles)

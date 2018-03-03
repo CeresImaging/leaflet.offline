@@ -1,4 +1,6 @@
 import L from 'leaflet';
+import geoUtils from 'geojson-utils'
+import geoBox from 'geojson-bbox'
 import localforage from './localforage';
 
 
@@ -72,30 +74,120 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
    * @return {object[]} the tile urls, key, url
    */
   getTileUrls(bounds, zoom) {
-    const tiles = [];
-    const origurl = this._url;
+    const tiles = []
+    const origurl = this._url
+
     // getTileUrl uses current zoomlevel, we want to overwrite it
-    this.setUrl(this._url.replace('{z}', zoom), true);
+    this.setUrl(this._url.replace('{z}', zoom), true)
+
+    const pointBounds = L.bounds(
+      this._map.project(bounds.getNorthWest(), zoom),
+      this._map.project(bounds.getSouthEast(), zoom)
+    )
+
+    console.log('[leaflet.offline] getTileUrls pointBounds @', pointBounds)
+
     const tileBounds = L.bounds(
-      bounds.min.divideBy(this.getTileSize().x).floor(),
-      bounds.max.divideBy(this.getTileSize().x).floor(),
-    );
-    let url;
+      pointBounds.min.divideBy(this.getTileSize().x).floor(),
+      pointBounds.max.divideBy(this.getTileSize().x).floor()
+    )
+
+    let url
+
     for (let j = tileBounds.min.y; j <= tileBounds.max.y; j += 1) {
       for (let i = tileBounds.min.x; i <= tileBounds.max.x; i += 1) {
-        const tilePoint = new L.Point(i, j);
-        url = L.TileLayer.prototype.getTileUrl.call(this, tilePoint);
+        const tilePoint = new L.Point(i, j)
+
+        url = L.TileLayer.prototype.getTileUrl.call(this, tilePoint)
+
         tiles.push({
           key: this._getStorageKey(url),
           url,
-        });
+        })
       }
     }
+
     // restore url
-    this.setUrl(origurl, true);
-    return tiles;
+    this.setUrl(origurl, true)
+
+    return tiles
   },
-});
+  /**
+   * Provides the tile URLs for a non-rectangular shape (GeoJSON) at the provided zoom level
+   */
+  getTileUrlsInShapes (shapes, zoom) {
+    const tiles = []
+    const origUrl = this._url
+
+    this.setUrl(this._url.replace('{z}', zoom), true)
+
+    console.log('[leaflet.offline] shapes (original)', shapes)
+
+    // const latLngBounds = L.bounds((shapes instanceof Array ? shapes : [shapes]).map(geoBox))
+
+    // console.log('[leaflet.offline] shape lat/lng bounds', latLngBounds)
+
+    // const pointBounds = L.bounds(
+    //   this._map.project(latLngBounds.getNorthWest(), zoom),
+    //   this._map.project(latLngBounds.getSouthEast(), zoom)
+    // )
+    //
+
+    const latLngBounds = (shapes instanceof Array ? shapes : [shapes]).map(geoBox)
+    // const latLngPoints = [
+    //   L.point(latLngBounds[0][0], latLngBounds[0][1]),
+    //   L.point(latLngBounds[0][2], latLngBounds[0][3])
+    // ]
+    const latLngPoints = new L.latLngBounds([
+      L.latLng(latLngBounds[0][1], latLngBounds[0][0]),
+      L.latLng(latLngBounds[0][3], latLngBounds[0][2])
+    ])
+
+    console.log('[leaflet.offline] shape geo bounds', latLngBounds)
+    console.log('[leaflet.offline] shape geo points', latLngPoints)
+
+    const pointBounds = L.bounds(
+      this._map.project(latLngPoints.getNorthWest(), zoom),
+      this._map.project(latLngPoints.getSouthEast(), zoom)
+    )
+    // const pointBounds = L.bounds(L.point(minLng, minLat), L.point(maxLng, maxLat))
+
+    console.log('[leaflet.offline] shape point bounds', pointBounds)
+
+    // FIXME: this isn't right. min/max are identical...?
+    //  - these should be point bounds but are in lat/lng... weird
+    const tileBounds = L.bounds(
+      pointBounds.min.divideBy(this.getTileSize().x).floor(),
+      pointBounds.max.divideBy(this.getTileSize().x).floor()
+    )
+
+    console.log('[leaflet.offline] shape tile bounds', tileBounds)
+
+    let url
+
+    for (let j = tileBounds.min.y; j <= tileBounds.max.y; j += 1) {
+      for (let i = tileBounds.min.x; i <= tileBounds.max.x; i += 1) {
+        shapes.forEach(shape => {
+          const tilePoint = new L.Point(i, j)
+
+          if (geoUtils.pointInPolygon(tilePoint, shape)) {
+            url = L.TileLayer.prototype.getTileUrl.call(this, tilePoint)
+
+            tiles.push({
+              key: this._getStorageKey(url),
+              url,
+            })
+          }
+        })
+      }
+    }
+
+    // restore url
+    this.setUrl(origurl, true)
+
+    return tiles
+  }
+})
 
 /**
 * Tiles removed event

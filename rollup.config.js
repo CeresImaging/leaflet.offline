@@ -11,6 +11,8 @@ export default {
   external: [
     'leaflet',
     'localforage',
+    'geojson-box',
+    'geojson-utils'
   ],
   globals: {
     localforage: 'localforage',

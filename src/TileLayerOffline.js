@@ -85,18 +85,23 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
       this._map.project(bounds.getSouthEast(), zoom)
     )
 
-    console.log('[leaflet.offline] getTileUrls pointBounds @', pointBounds)
+    console.log(`[leaflet.offline] getTileUrls pointBounds @ [zoom: ${zoom}]`, pointBounds)
 
     const tileBounds = L.bounds(
       pointBounds.min.divideBy(this.getTileSize().x).floor(),
       pointBounds.max.divideBy(this.getTileSize().x).floor()
     )
 
+    console.log(`[leaflet.offline] getTileUrls tileBounds @ [zoom: ${zoom}]`, tileBounds)
+
     let url
 
     for (let j = tileBounds.min.y; j <= tileBounds.max.y; j += 1) {
       for (let i = tileBounds.min.x; i <= tileBounds.max.x; i += 1) {
         const tilePoint = new L.Point(i, j)
+
+        // console.log('---- created tile [point, latlng]', tilePoint, this._map.unproject(tilePoint))
+        console.log('---- created tile [point, latlng latlng_better]', tilePoint, this._map.unproject(tilePoint, zoom), this._map.layerPointToLatLng(tilePoint))
 
         url = L.TileLayer.prototype.getTileUrl.call(this, tilePoint)
 
@@ -133,18 +138,28 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
     // )
     //
 
-    const latLngBounds = (shapes instanceof Array ? shapes : [shapes]).map(geoBox)
+    const geometries = shapes instanceof Array ? shapes : [shapes]
+
+    const latLngBounds = geometries.map(geoBox)
     // const latLngPoints = [
     //   L.point(latLngBounds[0][0], latLngBounds[0][1]),
     //   L.point(latLngBounds[0][2], latLngBounds[0][3])
     // ]
+
+    // BORKED (non-existent lat/lng)
+    // const latLngPoints = new L.latLngBounds([
+    //   L.latLng(latLngBounds[0][0], latLngBounds[0][1]),
+    //   L.latLng(latLngBounds[0][2], latLngBounds[0][3])
+    // ])
+
+    // BORKED (non-existent lat/lng)
     const latLngPoints = new L.latLngBounds([
       L.latLng(latLngBounds[0][1], latLngBounds[0][0]),
       L.latLng(latLngBounds[0][3], latLngBounds[0][2])
     ])
 
     console.log('[leaflet.offline] shape geo bounds', latLngBounds)
-    console.log('[leaflet.offline] shape geo points', latLngPoints)
+    console.log('[leaflet.offline] shape geo points', latLngPoints, latLngPoints.toBBoxString())
 
     const pointBounds = L.bounds(
       this._map.project(latLngPoints.getNorthWest(), zoom),
@@ -152,7 +167,9 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
     )
     // const pointBounds = L.bounds(L.point(minLng, minLat), L.point(maxLng, maxLat))
 
-    console.log('[leaflet.offline] shape point bounds', pointBounds)
+    // console.log('[leaflet.offline] shape point bounds [orig, unprojected]', { min: this._map.unproject(pointBounds.min), max: this._map.unproject(pointBounds.max) })
+    console.log('[leaflet.offline] shape point bounds [orig, unprojected, unprojected_better]', { min: this._map.unproject(pointBounds.min, zoom), max: this._map.unproject(pointBounds.max, zoom) }, { min: this._map.layerPointToLatLng(pointBounds.min), max: this._map.layerPointToLatLng(pointBounds.max) })
+
 
     // FIXME: this isn't right. min/max are identical...?
     //  - these should be point bounds but are in lat/lng... weird
@@ -161,16 +178,24 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
       pointBounds.max.divideBy(this.getTileSize().x).floor()
     )
 
-    console.log('[leaflet.offline] shape tile bounds', tileBounds)
+    console.log('[leaflet.offline] shape tile bounds [bounds, tile-size]', tileBounds, this.getTileSize())
 
     let url
 
     for (let j = tileBounds.min.y; j <= tileBounds.max.y; j += 1) {
       for (let i = tileBounds.min.x; i <= tileBounds.max.x; i += 1) {
-        shapes.forEach(shape => {
+        geometries.forEach(shape => {
           const tilePoint = new L.Point(i, j)
+          // const tileLatLng = this._map.unproject(tilePoint)
+          // const tileLatLng = this._map.unproject(tilePoint, zoom)
+          const tileLatLng = this._map.layerPointToLatLng(tilePoint)
 
-          if (geoUtils.pointInPolygon(tilePoint, shape)) {
+          console.log(`[leaflet.offline] ---- testing point against shape [zoom: ${zoom}]`, tilePoint, tileLatLng, shape)
+
+          // FIXME: this is never matching for some reason (`tiles` is always empty...?)
+          //  - it's probably because we converted to x/y when the original shape is using lat/lng
+          // if (geoUtils.pointInPolygon({ type: "Point", coordinates: [tilePoint.x, tilePoint.y] }, shape)) {
+          if (geoUtils.pointInPolygon({ type: "Point", coordinates: [tileLatLng.lng, tileLatLng.lat] }, shape)) {
             url = L.TileLayer.prototype.getTileUrl.call(this, tilePoint)
 
             tiles.push({
@@ -183,7 +208,7 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
     }
 
     // restore url
-    this.setUrl(origurl, true)
+    this.setUrl(origUrl, true)
 
     return tiles
   }

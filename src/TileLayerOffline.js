@@ -126,7 +126,7 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
 
     this.setUrl(this._url.replace('{z}', zoom), true)
 
-    console.log('[leaflet.offline] shapes (original)', shapes)
+    console.log('[leaflet.offline] shapes [original, zoom]', shapes, zoom)
 
     // const latLngBounds = L.bounds((shapes instanceof Array ? shapes : [shapes]).map(geoBox))
 
@@ -189,13 +189,15 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
           // const tileLatLng = this._map.unproject(tilePoint)
           // const tileLatLng = this._map.unproject(tilePoint, zoom)
           const tileLatLng = this._map.layerPointToLatLng(tilePoint)
+          const tileGeo = { type: "Point", coordinates: [tileLatLng.lng, tileLatLng.lat] }
 
-          console.log(`[leaflet.offline] ---- testing point against shape [zoom: ${zoom}]`, tilePoint, tileLatLng, shape)
+          console.log(`[leaflet.offline] ---- testing point against shape [zoom: ${zoom}, point, latlng, shape]`, tilePoint, tileLatLng, shape)
+          console.log('[leaflet.offline] -------- tile geo', tileGeo)
 
           // FIXME: this is never matching for some reason (`tiles` is always empty...?)
           //  - it's probably because we converted to x/y when the original shape is using lat/lng
           // if (geoUtils.pointInPolygon({ type: "Point", coordinates: [tilePoint.x, tilePoint.y] }, shape)) {
-          if (geoUtils.pointInPolygon({ type: "Point", coordinates: [tileLatLng.lng, tileLatLng.lat] }, shape)) {
+          if (geoUtils.pointInPolygon(tileGeo, shape)) {
             url = L.TileLayer.prototype.getTileUrl.call(this, tilePoint)
 
             tiles.push({

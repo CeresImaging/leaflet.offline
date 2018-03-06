@@ -144,6 +144,7 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
 
     // TODO: rename to `latLngCoords`
     const latLngBounds = geometries.map(geoBox)
+    const latLngCoords = latLngBounds
 
     // const latLngPoints = [
     //   L.point(latLngBounds[0][0], latLngBounds[0][1]),
@@ -162,8 +163,24 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
     //   L.latLng(latLngBounds[0][1], latLngBounds[0][0]),
     //   L.latLng(latLngBounds[0][3], latLngBounds[0][2])
     // ])
+    //
+    //
+    console.log('[leaflet.offline] shape lat/lng bound/coords', latLngCoords)
     
-    const latLngPoints = L.GeoJSON.coordsToLatLngs(latLngBounds
+    // TODO: probably wrap this in `new L.latLngBounds`
+    // const coordsAsLatLngs = L.GeoJSON.coordsToLatLngs(latLngBounds)
+    const coordsAsLatLngs = L.GeoJSON.coordsToLatLngs([[latLngCoords[0][0], latLngCoords[0][1]], [latLngCoords[0][2], latLngCoords[0][3]]])
+    // WARN: highly inefficient (probably just wrong)
+    // const coordsAsLatLngs = L.GeoJSON.coordsToLatLngs([[latLngCoords[0][2], latLngCoords[0][3]], [latLngCoords[0][1], latLngCoords[0][2]]])
+
+
+    console.log('[leaflet.offline] shape geo coords as lat/lng', coordsAsLatLngs)
+    // OK: this value looks good
+    const latLngPoints = new L.latLngBounds(coordsAsLatLngs)
+    // const latLngPoints = new L.latLngBounds([
+    //   L.latLng(coordsAsLatLngs[0], coordsAsLatLngs[1]),
+    //   L.latLng(coordsAsLatLngs[2], coordsAsLatLngs[3])
+    // ])
 
     console.log('[leaflet.offline] shape geo bounds', latLngBounds)
     console.log('[leaflet.offline] shape geo points', latLngPoints, latLngPoints.toBBoxString())
@@ -174,6 +191,7 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
     )
     // const pointBounds = L.bounds(L.point(minLng, minLat), L.point(maxLng, maxLat))
 
+// EXPERIMENTAL: testing whether or not this improves the accuracy of `unproject`
     console.log('[leaflet.offline] shape point bounds', pointBounds)
     // console.log('[leaflet.offline] shape point bounds [orig, unprojected]', { min: this._map.unproject(pointBounds.min), max: this._map.unproject(pointBounds.max) })
     // console.log('[leaflet.offline] shape point bounds [orig, unprojected, unprojected_better]', pointBounds, { min: this._map.unproject(pointBounds.min, zoom), max: this._map.unproject(pointBounds.max, zoom) }, { min: this._map.layerPointToLatLng(pointBounds.min), max: this._map.layerPointToLatLng(pointBounds.max) })
@@ -198,13 +216,7 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
     for (let j = tileBounds.min.y; j <= tileBounds.max.y; j += 1) {
       for (let i = tileBounds.min.x; i <= tileBounds.max.x; i += 1) {
         geometries.forEach(shape => {
-          // FIXME: the x/y seem to be twice as much as they should be
           const tilePoint = new L.Point(i, j)
-
-          // EXPERIMENTAL
-          //  - no difference, interestingly
-          // tilePoint.x = tilePoint.x / 2
-          // tilePoint.y = tilePoint.y / 2
 
           // const tileLatLng = this._map.unproject(tilePoint)
           // FIXME: should work..?
@@ -215,6 +227,8 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
           // FIXME: this is just slightly off... wahhh
           const tileLatLng = this._map.layerPointToLatLng(tilePoint)
 
+          console.log('[leaflet.offline] --- analyzing tile [unproject, layerPointToLatLng]', this._map.unproject(tilePoint, zoom), this._map.layerPointToLatLng(tilePoint))
+
           // TODO: aim towards this
           // @see https://github.com/Leaflet/Leaflet/blob/61ff641951fa64ba4730f71526988d99598681c8/src/layer/GeoJSON.js#L290
           // const tileLatLng = L.geoJSON.latLngToCoords(
@@ -223,9 +237,8 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
           console.log(`[leaflet.offline] ---- testing point against shape [zoom: ${zoom}, point, latlng, shape]`, tilePoint, tileLatLng, shape)
           console.log('[leaflet.offline] -------- tile geo', tileGeo)
 
-          // FIXME: this is never matching for some reason (`tiles` is always empty...?)
-          //  - it's probably because we converted to x/y when the original shape is using lat/lng
-          // if (geoUtils.pointInPolygon({ type: "Point", coordinates: [tilePoint.x, tilePoint.y] }, shape)) {
+          // FIXME: this is never matching because we are losing accuracy during `unprojct` (severe) and `layerPointToLatLng` (less)
+          //  - might need to convert the lat/lng coords in the original shapes to x/y coords
           if (geoUtils.pointInPolygon(tileGeo, shape)) {
             console.log('[leaflet.offline] !!!!! added tile point (in shape!)', tilePoint)
             url = L.TileLayer.prototype.getTileUrl.call(this, tilePoint)

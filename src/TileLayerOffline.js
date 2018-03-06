@@ -85,6 +85,7 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
       this._map.project(bounds.getSouthEast(), zoom)
     )
 
+    console.log(`[leaflet.offline] getTileUrls latLngBounds @ [zoom: ${zoom}]`, bounds)
     console.log(`[leaflet.offline] getTileUrls pointBounds @ [zoom: ${zoom}]`, pointBounds)
 
     const tileBounds = L.bounds(
@@ -126,6 +127,7 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
 
     this.setUrl(this._url.replace('{z}', zoom), true)
 
+    console.log('[leaflet.offline] L object', L)
     console.log('[leaflet.offline] shapes [original, zoom]', shapes, zoom)
 
     // const latLngBounds = L.bounds((shapes instanceof Array ? shapes : [shapes]).map(geoBox))
@@ -140,23 +142,28 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
 
     const geometries = shapes instanceof Array ? shapes : [shapes]
 
+    // TODO: rename to `latLngCoords`
     const latLngBounds = geometries.map(geoBox)
+
     // const latLngPoints = [
     //   L.point(latLngBounds[0][0], latLngBounds[0][1]),
     //   L.point(latLngBounds[0][2], latLngBounds[0][3])
     // ]
 
-    // BORKED (non-existent lat/lng)
+    // BORKED (wrong lat/lng)
     // const latLngPoints = new L.latLngBounds([
     //   L.latLng(latLngBounds[0][0], latLngBounds[0][1]),
     //   L.latLng(latLngBounds[0][2], latLngBounds[0][3])
     // ])
 
-    // BORKED (non-existent lat/lng)
-    const latLngPoints = new L.latLngBounds([
-      L.latLng(latLngBounds[0][1], latLngBounds[0][0]),
-      L.latLng(latLngBounds[0][3], latLngBounds[0][2])
-    ])
+    // BORKED but IDEAL (wrong lat/lng)
+    //  - I think this may be wrong and causing `latLngToLayerPoint` to return a slightly skewed result
+    // const latLngPoints = new L.latLngBounds([
+    //   L.latLng(latLngBounds[0][1], latLngBounds[0][0]),
+    //   L.latLng(latLngBounds[0][3], latLngBounds[0][2])
+    // ])
+    
+    const latLngPoints = L.GeoJSON.coordsToLatLngs(latLngBounds
 
     console.log('[leaflet.offline] shape geo bounds', latLngBounds)
     console.log('[leaflet.offline] shape geo points', latLngPoints, latLngPoints.toBBoxString())
@@ -167,9 +174,11 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
     )
     // const pointBounds = L.bounds(L.point(minLng, minLat), L.point(maxLng, maxLat))
 
+    console.log('[leaflet.offline] shape point bounds', pointBounds)
     // console.log('[leaflet.offline] shape point bounds [orig, unprojected]', { min: this._map.unproject(pointBounds.min), max: this._map.unproject(pointBounds.max) })
-    console.log('[leaflet.offline] shape point bounds [orig, unprojected, unprojected_better]', { min: this._map.unproject(pointBounds.min, zoom), max: this._map.unproject(pointBounds.max, zoom) }, { min: this._map.layerPointToLatLng(pointBounds.min), max: this._map.layerPointToLatLng(pointBounds.max) })
+    // console.log('[leaflet.offline] shape point bounds [orig, unprojected, unprojected_better]', pointBounds, { min: this._map.unproject(pointBounds.min, zoom), max: this._map.unproject(pointBounds.max, zoom) }, { min: this._map.layerPointToLatLng(pointBounds.min), max: this._map.layerPointToLatLng(pointBounds.max) })
 
+    console.log('[leaflet.offline] shape lat/lng first bound to point', this._map.latLngToLayerPoint(L.latLng(latLngBounds[0][1], latLngBounds[0][0])))
 
     // FIXME: this isn't right. min/max are identical...?
     //  - these should be point bounds but are in lat/lng... weird
@@ -178,6 +187,10 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
       pointBounds.max.divideBy(this.getTileSize().x).floor()
     )
 
+    // EXPERIMENTAL: testing whether or not this improves the accuracy of `unproject`
+    // WARN: highly inefficient since it needlessly goes through every single pixel instead of 256 at a time (i.e. the width of a tile)
+    // const tileBounds = pointBounds
+
     console.log('[leaflet.offline] shape tile bounds [bounds, tile-size]', tileBounds, this.getTileSize())
 
     let url
@@ -185,10 +198,26 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
     for (let j = tileBounds.min.y; j <= tileBounds.max.y; j += 1) {
       for (let i = tileBounds.min.x; i <= tileBounds.max.x; i += 1) {
         geometries.forEach(shape => {
+          // FIXME: the x/y seem to be twice as much as they should be
           const tilePoint = new L.Point(i, j)
+
+          // EXPERIMENTAL
+          //  - no difference, interestingly
+          // tilePoint.x = tilePoint.x / 2
+          // tilePoint.y = tilePoint.y / 2
+
           // const tileLatLng = this._map.unproject(tilePoint)
+          // FIXME: should work..?
+          //  - probably has something to do with `pointBounds`. It's divided by the tile size.
+          // TODO: could use `wrapLatLng` to ensure the value isn't invalid (too great)
+          //  - @see https://github.com/Leaflet/Leaflet/blob/f6e1a9be91fdfd1143d05799fdb7cef0b216ceaf/src/geo/crs/CRS.js#L110
           // const tileLatLng = this._map.unproject(tilePoint, zoom)
+          // FIXME: this is just slightly off... wahhh
           const tileLatLng = this._map.layerPointToLatLng(tilePoint)
+
+          // TODO: aim towards this
+          // @see https://github.com/Leaflet/Leaflet/blob/61ff641951fa64ba4730f71526988d99598681c8/src/layer/GeoJSON.js#L290
+          // const tileLatLng = L.geoJSON.latLngToCoords(
           const tileGeo = { type: "Point", coordinates: [tileLatLng.lng, tileLatLng.lat] }
 
           console.log(`[leaflet.offline] ---- testing point against shape [zoom: ${zoom}, point, latlng, shape]`, tilePoint, tileLatLng, shape)
@@ -198,6 +227,7 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
           //  - it's probably because we converted to x/y when the original shape is using lat/lng
           // if (geoUtils.pointInPolygon({ type: "Point", coordinates: [tilePoint.x, tilePoint.y] }, shape)) {
           if (geoUtils.pointInPolygon(tileGeo, shape)) {
+            console.log('[leaflet.offline] !!!!! added tile point (in shape!)', tilePoint)
             url = L.TileLayer.prototype.getTileUrl.call(this, tilePoint)
 
             tiles.push({

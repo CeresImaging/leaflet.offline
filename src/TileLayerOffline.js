@@ -127,10 +127,13 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
 
     this.setUrl(this._url.replace('{z}', zoom), true)
 
+    // EXPERIMENTAL
+    //  - causes both `unproject` and `layerPointToLatLng` to produce similar yet different reults. interesting.
+    // this._map._zoom = zoom
+
     console.log('[leaflet.offline] L object', L)
     console.log('[leaflet.offline] shapes map pixel origin', this._map.getPixelOrigin())
-    console.log('[leaflet.offline] shapes [original, zoom]', shapes, zoom)
-
+    console.log('[leaflet.offline] shapes [original, zoom, actual-zoom, url]', shapes, zoom, this._map.getZoom(), this._url)
     // const latLngBounds = L.bounds((shapes instanceof Array ? shapes : [shapes]).map(geoBox))
 
     // console.log('[leaflet.offline] shape lat/lng bounds', latLngBounds)
@@ -187,11 +190,15 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
     console.log('[leaflet.offline] shape geo points', latLngPoints, latLngPoints.toBBoxString())
 
     const pointBounds = L.bounds(
-      // this._map.project(latLngPoints.getNorthWest(), zoom),
-      // this._map.project(latLngPoints.getSouthEast(), zoom)
+      this._map.project(latLngPoints.getNorthWest(), zoom),
+      this._map.project(latLngPoints.getSouthEast(), zoom)
+      // this._map.project(latLngPoints.getNorthWest()),
+      // this._map.project(latLngPoints.getSouthEast()),
       // !!! produces much more accurate results, but not nearly as many... lol
-      this._map.latLngToLayerPoint(latLngPoints.getNorthWest(), zoom),
-      this._map.latLngToLayerPoint(latLngPoints.getSouthEast(), zoom)
+      //  - seems the values are way too low though, which would explain the shockingly low tile boundaries
+      //  - most likely has to do with not being able to provide the current zoom level, although this should be handled by `this.setUrl`
+      // this._map.latLngToLayerPoint(latLngPoints.getNorthWest()),
+      // this._map.latLngToLayerPoint(latLngPoints.getSouthEast())
     )
     // const pointBounds = L.bounds(L.point(minLng, minLat), L.point(maxLng, maxLat))
 
@@ -202,15 +209,13 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
 
     console.log('[leaflet.offline] shape lat/lng first bound to point', this._map.latLngToLayerPoint(L.latLng(latLngBounds[0][1], latLngBounds[0][0])))
 
-    // FIXME: this isn't right. min/max are identical...?
-    //  - these should be point bounds but are in lat/lng... weird
     const tileBounds = L.bounds(
       pointBounds.min.divideBy(this.getTileSize().x).floor(),
       pointBounds.max.divideBy(this.getTileSize().x).floor()
     )
-
-    // EXPERIMENTAL: testing whether or not this improves the accuracy of `unproject`
-    // WARN: highly inefficient since it needlessly goes through every single pixel instead of 256 at a time (i.e. the width of a tile)
+    //
+    // EXPERIMENTAL: use of GeoJSON project/unproject aliases seems to eliminate the need for dividing by the tile size
+    // WARN: highly inefficient.
     // const tileBounds = pointBounds
 
     console.log('[leaflet.offline] shape tile bounds [bounds, tile-size]', tileBounds, this.getTileSize())

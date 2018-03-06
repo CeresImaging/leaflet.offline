@@ -128,6 +128,7 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
     this.setUrl(this._url.replace('{z}', zoom), true)
 
     console.log('[leaflet.offline] L object', L)
+    console.log('[leaflet.offline] shapes map pixel origin', this._map.getPixelOrigin())
     console.log('[leaflet.offline] shapes [original, zoom]', shapes, zoom)
 
     // const latLngBounds = L.bounds((shapes instanceof Array ? shapes : [shapes]).map(geoBox))
@@ -186,8 +187,11 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
     console.log('[leaflet.offline] shape geo points', latLngPoints, latLngPoints.toBBoxString())
 
     const pointBounds = L.bounds(
-      this._map.project(latLngPoints.getNorthWest(), zoom),
-      this._map.project(latLngPoints.getSouthEast(), zoom)
+      // this._map.project(latLngPoints.getNorthWest(), zoom),
+      // this._map.project(latLngPoints.getSouthEast(), zoom)
+      // !!! produces much more accurate results, but not nearly as many... lol
+      this._map.latLngToLayerPoint(latLngPoints.getNorthWest(), zoom),
+      this._map.latLngToLayerPoint(latLngPoints.getSouthEast(), zoom)
     )
     // const pointBounds = L.bounds(L.point(minLng, minLat), L.point(maxLng, maxLat))
 

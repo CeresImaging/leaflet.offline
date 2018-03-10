@@ -52,8 +52,9 @@
     "sinon": "^4.1.4"
   },
   "dependencies": {
+    "@mapbox/tilebelt": "^1.0.1",
+    "@turf/turf": "^5.1.6",
     "geojson-bbox": "0.0.0",
-    "geojson-utils": "^1.1.0",
     "leaflet": "^1.2.0",
     "localforage": "^1.5.5"
   }

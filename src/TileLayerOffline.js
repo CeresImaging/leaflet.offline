@@ -5,6 +5,29 @@ import { tileToGeoJSON } from '@mapbox/tilebelt';
 import { polygonsIntersect } from './GeoUtils';
 
 // https://codepen.io/slurmulon/pen/zRVzjX
+//
+
+// REMOVE ME (for testing
+
+// --------------------------- START
+
+function createPolygonFromBounds (latLngBounds, map) {
+  const center = latLngBounds.getCenter()
+  const latlngs = []
+
+  latlngs.push(latLngBounds.getSouthWest());//bottom left
+  latlngs.push({ lat: latLngBounds.getSouth(), lng: center.lng });//bottom center
+  latlngs.push(latLngBounds.getSouthEast());//bottom right
+  latlngs.push({ lat: center.lat, lng: latLngBounds.getEast() });// center right
+  latlngs.push(latLngBounds.getNorthEast());//top right
+  latlngs.push({ lat: latLngBounds.getNorth(), lng: map.getCenter().lng });//top center
+  latlngs.push(latLngBounds.getNorthWest());//top left
+  latlngs.push({ lat: map.getCenter().lat, lng: latLngBounds.getWest() });//center left
+
+  return new L.polygon(latlngs);
+}
+
+// END -----------------------------
 
 
 /**
@@ -131,24 +154,40 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
     this.setUrl(this._url.replace('{z}', zoom), true)
 
     const geometries = shapes instanceof Array ? shapes : [shapes]
-    const latLngBounds = geometries.map(geoBox)
+    // const latLngBounds = geometries.map(geoBox)
 
-    console.log('[leaflet.offline] shape lat/lng bound/coords', latLngBounds)
+    // console.log('[leaflet.offline] shape lat/lng bound/coords', latLngBounds)
     
-    // TODO: probably wrap this in `new L.latLngBounds`
-    // const coordsAsLatLngs = L.GeoJSON.coordsToLatLngs(latLngBounds)
-    const coordsAsLatLngs = L.GeoJSON.coordsToLatLngs([[latLngBounds[0][0], latLngBounds[0][1]], [latLngBounds[0][2], latLngBounds[0][3]]])
-    // const coordsAsLatLngs = L.GeoJSON.coordsToLatLngs([[latLngBounds[0], latLngBounds[1]], [latLngBounds[2], latLngBounds[3]]])
+    // // TODO: probably wrap this in `new L.latLngBounds`
+    // // const coordsAsLatLngs = L.GeoJSON.coordsToLatLngs(latLngBounds)
+    // const coordsAsLatLngs = L.GeoJSON.coordsToLatLngs([[latLngBounds[0][0], latLngBounds[0][1]], [latLngBounds[0][2], latLngBounds[0][3]]])
+    // // const coordsAsLatLngs = L.GeoJSON.coordsToLatLngs([[latLngBounds[0], latLngBounds[1]], [latLngBounds[2], latLngBounds[3]]])
 
-    console.log('[leaflet.offline] shape geo coords as lat/lng', coordsAsLatLngs)
-    const latLngPoints = new L.latLngBounds(coordsAsLatLngs)
+    // console.log('[leaflet.offline] shape geo coords as lat/lng', coordsAsLatLngs)
+    // const latLngPoints = new L.latLngBounds(coordsAsLatLngs)
 
-    console.log('[leaflet.offline] shape geo points', latLngPoints, latLngPoints.toBBoxString())
+    // console.log('[leaflet.offline] shape geo points', latLngPoints, latLngPoints.toBBoxString())
 
-    const pointBounds = L.bounds(
-      this._map.project(latLngPoints.getNorthWest(), zoom),
-      this._map.project(latLngPoints.getSouthEast(), zoom)
+    // const pointBounds = L.bounds(
+    //   this._map.project(latLngPoints.getNorthWest(), zoom),
+    //   this._map.project(latLngPoints.getSouthEast(), zoom)
+    // )
+
+    geometries.forEach(shape => {
+
+    // --- start
+
+    // const boundCoords = geoBoundingBox(shape)
+    const boundCoords  = geoBox(shape)
+		const boundLatLngs = new L.latLngBounds(L.GeoJSON.coordsToLatLngs([[boundCoords[0], boundCoords[1]], [boundCoords[2], boundCoords[3]]]))
+		const boundShape = createPolygonFromBounds(boundLatLngs, this._map).setStyle({ color: 'yellow' })
+
+		const pointBounds = L.bounds(
+      this._map.project(boundLatLngs.getNorthWest(), zoom),
+      this._map.project(boundLatLngs.getSouthEast(), zoom)
     )
+
+		// --- end
 
     const tileBounds = L.bounds(
       pointBounds.min.divideBy(this.getTileSize().x).floor(),
@@ -157,15 +196,20 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
 
     let url
 
+    boundShape.addTo(this._map)
+
     for (let j = tileBounds.min.y; j <= tileBounds.max.y; j += 1) {
       for (let i = tileBounds.min.x; i <= tileBounds.max.x; i += 1) {
-        geometries.forEach(shape => {
+        // geometries.forEach(shape => {
           const tilePoint = new L.Point(i, j)
           const tileShape = tileToGeoJSON([tilePoint.x, tilePoint.y, zoom])
           const tileIntersects = polygonsIntersect(tileShape, shape)
 
           if (tileIntersects) {
             console.log('[leaflet.offline] added tile point (in shape!)', tilePoint)
+
+            L.geoJSON(tileShape, { style: { color: 'orange' } }).addTo(this._map)
+
             url = L.TileLayer.prototype.getTileUrl.call(this, tilePoint)
 
             tiles.push({
@@ -173,9 +217,11 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
               url,
             })
           }
-        })
+        // })
       }
     }
+
+    })
 
     // restore url
     this.setUrl(origUrl, true)

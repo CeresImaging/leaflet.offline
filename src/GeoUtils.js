@@ -10,34 +10,34 @@ export function coordsIntersectPolygon (coords, shape) {
 // TODO: support Point, LineString
 // FIXME: frankenstein code, improve (replace with `Array.prototype.any`)
 export function polygonsIntersect (shape1, shape2) {
-  let results = []
+  let result = []
 
   if (shape1.type == 'Polygon' || shape1.type == 'MultiLineString') {
-    results = shape1.coordinates.reduce((dump, part) => {
+    result = shape1.coordinates.reduce((dump, part) => {
       return dump.concat(part.reduce((dump, coord) => {
         return coordsIntersectPolygon(coord, shape2)
       }))
     }, [])
   } else if (shape1.type == 'MultiPolygon') {
-    results = shape1.coordinates.reduce((dump, poly) => {
+    result = shape1.coordinates.reduce((dump, poly) => {
       return dump.concat(poly.reduce((points, part) => {
         return coordsIntersectPolygon(part, shape2)
       }, []))
     }, [])
   } else if (shape1.type == 'Feature') {
-		results = polygonsIntersect(shape1.geometry, shape2)
+		result = polygonsIntersect(shape1.geometry, shape2)
   } else if (shape1.type == 'GeometryCollection') {
-    results = shape1.geometries.reduce((dump, g) => {
+    result = shape1.geometries.reduce((dump, g) => {
 			return dump.concat(polygonsIntersect(g, shape2))
     }, [])
   } else if (shape1.type == 'FeatureCollection') {
-    results = shape1.features.reduce((dump, f) => {
+    result = shape1.features.reduce((dump, f) => {
 			return dump.concat(polygonsIntersect(f, shape2))
     }, [])
 		// TODO: determine if `any` element of the dump is `true`
   }
 
-  console.log('util results', results[0])
+  console.log('util results', result[0])
 
-  return results[0]
+  return result[0]
 }

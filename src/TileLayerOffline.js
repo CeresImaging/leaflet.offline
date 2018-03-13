@@ -2,7 +2,7 @@ import L from 'leaflet';
 import localforage from './localforage';
 import geoBox from 'geojson-bbox';
 import { tileToGeoJSON } from '@mapbox/tilebelt';
-import { polygonsIntersect } from './GeoUtils';
+import { polygonsIntersect, polyIntersectsWithMultiPoly, shapesIntersect } from './GeoUtils';
 
 // https://codepen.io/slurmulon/pen/zRVzjX
 //
@@ -232,7 +232,7 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
 
       let url
 
-      boundShape.addTo(this._map)
+      // boundShape.addTo(this._map)
 
       for (let j = tileBounds.min.y; j <= tileBounds.max.y; j += 1) {
         for (let i = tileBounds.min.x; i <= tileBounds.max.x; i += 1) {
@@ -240,7 +240,9 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
           //  - actually at second glance these values are okay. even the resulting lat/lng looks fine...?
           const tilePoint = new L.Point(i, j)
           const tileShape = tileToGeoJSON([tilePoint.x, tilePoint.y, zoom]) // FIXME: the 0th element of each coordinate Array is off here. 1st element is fine.
-          const tileIntersects = polygonsIntersect(tileShape, shape)
+          // const tileIntersects = polygonsIntersect(tileShape, shape)
+          // const tileIntersects = polyIntersectsWithMultiPoly(tileShape, shape)
+          const tileIntersects = shapesIntersect(tileShape, shape)
 
           console.log('\n--- tile point', tilePoint)
           console.log('--- tile x/y (orig)', i, j)

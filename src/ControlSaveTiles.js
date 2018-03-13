@@ -229,7 +229,7 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
     xhr.onreadystatechange = () => {
       if (xhr.readyState === XMLHttpRequest.DONE) {
         if (xhr.status === 200) {
-          console.log('[leaflet.offline] TILE LOADED')
+          // console.log('[leaflet.offline] TILE LOADED')
           self.status.lengthLoaded += 1;
           self.status.lengthProcessed += 1;
           self._saveTile(tileUrl.key, xhr.response);
@@ -247,7 +247,7 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
         }
 
         if (xhr.status >= 400) {
-          console.log('[leaflet.offline] TILE FAILED!!!')
+          // console.log('[leaflet.offline] TILE FAILED!!!')
           self.status.lengthProcessed += 1;
           self.status.lengthFailed += 1;
           self._baseLayer.fire('loadtilefailed', self.status);
@@ -273,7 +273,7 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
         self.status.lengthSaved += 1;
         //self.status.lengthProcessed += 1;
         self._baseLayer.fire('savetileend', self.status);
-        console.log('[leaflet.offline] saved tile url @@@@@@@@@@@', tileUrl, self.status)
+        // console.log('[leaflet.offline] saved tile url @@@@@@@@@@@', tileUrl, self.status)
         if (self.status.lengthSaved === self.status.lengthToBeSaved) {
           self._baseLayer.fire('saveend', self.status);
           self.setStorageSize();
@@ -319,11 +319,7 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
 * @return {ControlSaveTiles}
 */
 
-console.log('[leaflet.offline] BINDING SAVE TILEZ!!! @@@@@')
-
 // FIXME: in 1.0.X this doesn't share the global Leaflet properly
 //  - probably a `webpack` thing
 //  - @see https://github.com/webpack/docs/wiki/shimming-modules
 L.control.savetiles = (baseLayer, options) => new ControlSaveTiles(baseLayer, options);
-
-console.log('[leaflet.offline] BOUND SAVE TIEZ', L.control.savetiles)

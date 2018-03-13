@@ -1,8 +1,10 @@
 import turf from '@turf/turf'
 
 export function coordsIntersectPolygon (coords, shape) {
-  console.log('--- detecting coord intersection', coords)
+  // console.log('--- detecting coord intersection', coords)
 	const point = turf.point(coords)
+
+  // console.log('------ coord as point', point)
 
 	return turf.inside(point, shape)
 }
@@ -37,7 +39,7 @@ export function polygonsIntersect (shape1, shape2) {
 		// TODO: determine if `any` element of the dump is `true`
   }
 
-  console.log('util results', result[0])
+  // console.log('util results', result[0])
 
   return result[0]
 }

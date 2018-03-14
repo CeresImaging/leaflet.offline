@@ -115,6 +115,8 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
     const origUrl = this._url
     const geometries = shapes instanceof Array ? shapes : [shapes]
 
+    console.log('getTileUrlsInShapes this', this)
+
     this.setUrl(this._url.replace('{z}', zoom), true)
 
     geometries.forEach(shape => {
@@ -142,6 +144,8 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
 
           if (tileIntersects) {
             const url = L.TileLayer.prototype.getTileUrl.call(this, tilePoint)
+
+            console.log('pushing tile url', url)
 
             tiles.push({
               key: this._getStorageKey(url),

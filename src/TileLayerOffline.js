@@ -116,8 +116,12 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
 
     return tiles
   },
+
   /**
-   * Dermines the tile URLs for a non-rectangular shape (GeoJSON) at the defined zoom level
+   * Gets the tile URLs for a non-rectangular shape (GeoJSON) at the defined zoom level
+   * @param  {GeoJSON} shapes
+   * @param  {number} zoom
+   * @return {object[]} the tile urls, key, url
    */
   getTileUrlsInShapes (shapes, zoom) {
     const tiles = []
@@ -151,8 +155,6 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
 
           if (tileIntersects) {
             const url = L.TileLayer.prototype.getTileUrl.call(this, tilePoint)
-
-            console.log('pushing tile url', url)
 
             tiles.push({
               key: this._getStorageKey(url),

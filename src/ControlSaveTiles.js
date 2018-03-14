@@ -225,7 +225,6 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
   },
 
   _resetStatus(tiles = []) {
-    console.log('!!!! reset status')
     this.status = {
       lengthLoaded: 0,
       lengthProcessed: 0,
@@ -233,7 +232,7 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
       lengthToBeSaved: tiles.length,
       lengthSaved: 0,
       _tilesforSave: tiles,
-    };
+    }
   },
 
   /**
@@ -265,8 +264,7 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
             self._baseLayer.fire('loadtileend', self.status)
           } else {
             self._baseLayer.fire('loadtileend', self.status)
-            // TODO: might need to chagne this to `lengthProcessed`
-            // if (self.status.lengthLoaded === self.status.lengthToBeSaved) {
+
             if (self.status.lengthProcessed === self.status.lengthToBeSaved) {
               self._baseLayer.fire('loadend', self.status)
             }

@@ -144,8 +144,6 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
    * @return {void}
    */
   _saveTiles() {
-    console.log('[leaflet.offline] about to save tiles')
-
     let bounds;
     const self = this;
     let tiles = [];
@@ -171,24 +169,14 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
     // TODO: if a shape is provided use those bounds instead (@see https://github.com/geosquare/geojson-bbox)
     const latlngBounds = this.options.bounds || this._map.getBounds();
 
-    console.log('[leaflet.offline] iterating through zoom levels', zoomlevels.length)
-
     for (const i in zoomlevels) {
-      // bounds = L.bounds(
-      //   this._map.project(latlngBounds.getNorthWest(), zoomlevels[i]),
-      //   this._map.project(latlngBounds.getSouthEast(), zoomlevels[i]),
-      // );
-      // console.log('[leaflet.offline] bounds at zoom level', bounds, zoomlevels[i])
-      // const tileUrls = this._baseLayer.getTileUrls(bounds, zoomlevels[i])
-      //
-      // const tileUrls = this._baseLayer.getTileUrls(latlngBounds, zoomlevels[i])
       const tileUrls = this._baseLayer.getTileUrlsInShapes(this.options.shapes, zoomlevels[i])
 
-      console.log(`[leaflet.offline] adding tile URLs for zoom level ${zoomlevels[i]}`, tileUrls, tileUrls.length)
       tiles = tiles.concat(tileUrls)
-      // tiles = tiles.concat(this._baseLayer.getTileUrls(bounds, zoomlevels[i]));
     }
+
     this._resetStatus(tiles);
+
     const succescallback = () => {
       self._baseLayer.fire('savestart', self.status);
       const subdlength = self._baseLayer.getSimultaneous();
@@ -229,7 +217,6 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
     xhr.onreadystatechange = () => {
       if (xhr.readyState === XMLHttpRequest.DONE) {
         if (xhr.status === 200) {
-          // console.log('[leaflet.offline] TILE LOADED')
           self.status.lengthLoaded += 1;
           self.status.lengthProcessed += 1;
           self._saveTile(tileUrl.key, xhr.response);
@@ -247,7 +234,6 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
         }
 
         if (xhr.status >= 400) {
-          // console.log('[leaflet.offline] TILE FAILED!!!')
           self.status.lengthProcessed += 1;
           self.status.lengthFailed += 1;
           self._baseLayer.fire('loadtilefailed', self.status);
@@ -273,13 +259,11 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
         self.status.lengthSaved += 1;
         //self.status.lengthProcessed += 1;
         self._baseLayer.fire('savetileend', self.status);
-        // console.log('[leaflet.offline] saved tile url @@@@@@@@@@@', tileUrl, self.status)
         if (self.status.lengthSaved === self.status.lengthToBeSaved) {
           self._baseLayer.fire('saveend', self.status);
           self.setStorageSize();
         }
       }).catch((err) => {
-        console.log('[leaflet.offline] ERROR', err)
         throw new Error(err);
       });
     }).catch((err) => {

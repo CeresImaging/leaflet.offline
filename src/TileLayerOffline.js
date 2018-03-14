@@ -90,13 +90,10 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
       pointBounds.max.divideBy(this.getTileSize().x).floor()
     )
 
-    let url
-
     for (let j = tileBounds.min.y; j <= tileBounds.max.y; j += 1) {
       for (let i = tileBounds.min.x; i <= tileBounds.max.x; i += 1) {
         const tilePoint = new L.Point(i, j)
-
-        url = L.TileLayer.prototype.getTileUrl.call(this, tilePoint)
+        const url = L.TileLayer.prototype.getTileUrl.call(this, tilePoint)
 
         tiles.push({
           key: this._getStorageKey(url),
@@ -132,13 +129,10 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
         this._map.project(boundLatLngs.getSouthEast(), zoom)
       )
 
-      // NOTE: these values match the Codepen (correct)
       const tileBounds = L.bounds(
         pointBounds.min.divideBy(this.getTileSize().x).floor(),
         pointBounds.max.divideBy(this.getTileSize().x).floor()
       )
-
-      let url
 
       for (let j = tileBounds.min.y; j <= tileBounds.max.y; j += 1) {
         for (let i = tileBounds.min.x; i <= tileBounds.max.x; i += 1) {
@@ -147,7 +141,7 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
           const tileIntersects = shapesIntersect(tileShape, shape)
 
           if (tileIntersects) {
-            url = L.TileLayer.prototype.getTileUrl.call(this, tilePoint)
+            const url = L.TileLayer.prototype.getTileUrl.call(this, tilePoint)
 
             tiles.push({
               key: this._getStorageKey(url),

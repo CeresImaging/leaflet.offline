@@ -18,16 +18,20 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
   * @return {HTMLElement}      [description]
   */
   createTile(coords, done) {
-    const tile = L.TileLayer.prototype.createTile.call(this, coords, done);
-    const url = tile.src;
-    tile.src = undefined;
-    this.setDataUrl(tile, url).then((dataurl) => {
-      tile.src = dataurl;
+    const tile = L.TileLayer.prototype.createTile.call(this, coords, done)
+    const url = tile.src
+
+    tile.src = undefined
+
+    this.setDataUrl(tile, url).then((dataUrl) => {
+      tile.src = dataUrl
     }).catch(() => {
-      tile.src = url;
-    });
-    return tile;
+      tile.src = url
+    })
+
+    return tile
   },
+
   /**
    * dataurl from localstorage
    * @param {DomElement} tile [description]
@@ -37,14 +41,15 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
   setDataUrl(tile, url) {
     return new Promise((resolve, reject) => {
       localforage.getItem(this._getStorageKey(url)).then((data) => {
-      if (data && typeof data === 'object') {
-        resolve(URL.createObjectURL(data));
-      } else {
-        reject();
-      }
-      }).catch((e) => { reject(e); });
-    });
+        if (data && typeof data === 'object') {
+          resolve(URL.createObjectURL(data))
+        } else {
+          reject()
+        }
+      }).catch((e) => { reject(e) })
+    })
   },
+
   /**
    * get key to use for storage
    * @private
@@ -52,21 +57,25 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
    * @return {string} unique identifier.
    */
   _getStorageKey(url) {
-    let key;
-    const subdomainpos = this._url.indexOf('{s}');
+    let key
+    const subdomainpos = this._url.indexOf('{s}')
+
     if (subdomainpos > 0) {
       key = url.substring(0, subdomainpos) +
-      this.options.subdomains['0'] +
-      url.substring(subdomainpos + 1, url.length);
+        this.options.subdomains['0'] +
+        url.substring(subdomainpos + 1, url.length)
     }
-    return key || url;
+
+    return key || url
   },
+
   /**
    * @return {number} Number of simultanous downloads from tile server
    */
   getSimultaneous() {
     return this.options.subdomains.length;
   },
+
   /**
    * getTileUrls for single zoomlevel
    * @param  {object} L.latLngBounds
@@ -114,8 +123,6 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
     const tiles = []
     const origUrl = this._url
     const geometries = shapes instanceof Array ? shapes : [shapes]
-
-    console.log('getTileUrlsInShapes this', this)
 
     this.setUrl(this._url.replace('{z}', zoom), true)
 
@@ -212,11 +219,10 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
  * @type {object}
  */
 
-
 /**
  * @function L.tileLayer.offline
  * @param  {string} url [description]
  * @param  {object} options {@link http://leafletjs.com/reference-1.2.0.html#tilelayer}
  * @return {TileLayerOffline} an instance of TileLayerOffline
  */
-L.tileLayer.offline = (url, options) => new TileLayerOffline(url, options);
+L.tileLayer.offline = (url, options) => new TileLayerOffline(url, options)

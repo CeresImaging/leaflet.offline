@@ -1,11 +1,17 @@
 import turf from '@turf/turf'
 
+/**
+ * Determines if a set of coordinates reside within a GeoJSON shape
+ */
 export function coordsIntersectPolygon (coords, shape) {
 	const point = turf.point(coords)
 
 	return turf.inside(point, shape)
 }
 
+/**
+ * Determines if two GeoJSON shapes intersect
+ */
 export function shapesIntersect (shape1, shape2) {
   if (shape1.type == 'Point') {
     return coordsIntersectPolygon(shape1.coordinates, shape2)

@@ -306,11 +306,13 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
           self._baseLayer.fire('saveend', self.status)
           self.setStorageSize()
         }
-      }).catch((err) => {
+      }).catch(error => {
+        self._baseLayer.fire('saveerror', { status: self.status, error })
+
         throw new Error(err)
-      });
-    }).catch((err) => {
-      throw new Error(err)
+      })
+    }).catch(error => {
+      throw new Error(error)
     })
   },
 

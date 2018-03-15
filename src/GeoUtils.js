@@ -4,9 +4,9 @@ import turf from '@turf/turf'
  * Determines if a set of coordinates reside within a GeoJSON shape
  */
 export function coordsIntersectPolygon (coords, shape) {
-	const point = turf.point(coords)
+  const point = turf.point(coords)
 
-	return turf.inside(point, shape)
+  return turf.inside(point, shape)
 }
 
 /**

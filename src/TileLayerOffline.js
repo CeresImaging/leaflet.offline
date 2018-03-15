@@ -1,8 +1,8 @@
-import L from 'leaflet';
-import localforage from './localforage';
-import geoBox from 'geojson-bbox';
-import { tileToGeoJSON } from '@mapbox/tilebelt';
-import { shapesIntersect } from './GeoUtils';
+import L from 'leaflet'
+import localforage from './localforage'
+import geoBox from 'geojson-bbox'
+import { tileToGeoJSON } from '@mapbox/tilebelt'
+import { shapesIntersect } from './GeoUtils'
 
 /**
  * A layer that uses store tiles when available. Falls back to online.
@@ -73,7 +73,7 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
    * @return {number} Number of simultanous downloads from tile server
    */
   getSimultaneous() {
-    return this.options.subdomains.length;
+    return this.options.subdomains.length
   },
 
   /**

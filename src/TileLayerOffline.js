@@ -17,7 +17,7 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
   * @param  {Function} done   [description]
   * @return {HTMLElement}      [description]
   */
-  createTile(coords, done) {
+  createTile (coords, done) {
     const tile = L.TileLayer.prototype.createTile.call(this, coords, done)
     const url = tile.src
 
@@ -36,7 +36,7 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
    * @param {string} url  [description]
    * @return {Promise} resolves to base64 url
    */
-  setDataUrl(tile, url) {
+  setDataUrl (tile, url) {
     return new Promise((resolve, reject) => {
       localforage.getItem(this._getStorageKey(url)).then((data) => {
         if (data && typeof data === 'object') {
@@ -54,7 +54,7 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
    * @param  {string} url url used to load tile
    * @return {string} unique identifier.
    */
-  _getStorageKey(url) {
+  _getStorageKey (url) {
     let key
     const subdomainpos = this._url.indexOf('{s}')
 
@@ -70,7 +70,7 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
   /**
    * @return {number} Number of simultanous downloads from tile server
    */
-  getSimultaneous() {
+  getSimultaneous () {
     return this.options.subdomains.length
   },
 
@@ -80,7 +80,7 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
    * @param  {number} zoom
    * @return {object[]} the tile urls, key, url
    */
-  getTileUrls(bounds, zoom) {
+  getTileUrls (bounds, zoom) {
     const tiles = []
     const origurl = this._url
 
@@ -178,6 +178,7 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
 */
 
 /**
+
  * Start saving tiles
  * @event savestart
  * @memberof TileLayerOffline

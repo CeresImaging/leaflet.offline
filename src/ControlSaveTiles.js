@@ -49,7 +49,7 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
    * @param  {Object} options
    * @return {void}
    */
-  initialize(baseLayer, options) {
+  initialize (baseLayer, options) {
     this._baseLayer = baseLayer
     this.setStorageSize()
 
@@ -89,7 +89,7 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
    * @param  {Function} callback [description]
    * @private
    */
-  getStorageSize(callback) {
+  getStorageSize (callback) {
     this.setStorageSize(callback)
   },
 
@@ -97,7 +97,7 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
    * Change baseLayer
    * @param {TileLayerOffline} layer
    */
-  setLayer(layer) {
+  setLayer (layer) {
     this._baseLayer = layer
   },
 
@@ -105,7 +105,7 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
    * set the bounds of the area to save
    * @param {L.latLngBounds} bounds
    */
-  setBounds(bounds) {
+  setBounds (bounds) {
     this.options.bounds = bounds
   },
 
@@ -121,7 +121,7 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
    * set saveWhatYouSee
    * @param {boolean} saveWhatYouSee
    */
-  setSaveWhatYouSee(saveWhatYouSee) {
+  setSaveWhatYouSee (saveWhatYouSee) {
     this.options.saveWhatYouSee = saveWhatYouSee
   },
 
@@ -129,7 +129,7 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
    * set the maxZoom
    * @param {number} zoom
    */
-  setMaxZoom(zoom) {
+  setMaxZoom (zoom) {
     this.options.maxZoom = zoom
   },
 
@@ -137,11 +137,11 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
    * set the zoomLevels
    * @param {array} zoomLevels min,max
    */
-  setzoomLevels(zoomLevels) {
+  setzoomLevels (zoomLevels) {
     this.options.zoomLevels = zoomLevels
   },
 
-  onAdd() {
+  onAdd () {
     const container = L.DomUtil.create('div', 'savetiles leaflet-bar')
     const { options } = this
 
@@ -151,7 +151,7 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
     return container
   },
 
-  _createButton(html, className, container, fn) {
+  _createButton (html, className, container, fn) {
     const link = L.DomUtil.create('a', className, container)
 
     link.innerHTML = html
@@ -172,7 +172,7 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
    * @private
    * @return {void}
    */
-  _saveTiles() {
+  _saveTiles () {
     const self = this
     // minimum zoom to prevent the user from saving the whole world
     const minZoom = 5
@@ -226,12 +226,12 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
     }
   },
 
-  cancel() {
+  cancel () {
     this._baseLayer.fire('savecancelled', self.status)
     this._resetStatus()
   },
 
-  _resetStatus(tiles = []) {
+  _resetStatus (tiles = []) {
     this.status = {
       lengthLoaded: 0,
       lengthProcessed: 0,
@@ -298,7 +298,7 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
    * @param  {blob} blob    [description]
    * @return {void}         [description]
    */
-  _saveTile(tileUrl, blob) {
+  _saveTile (tileUrl, blob) {
     const self = this
 
     localforage.removeItem(tileUrl).then(() => {

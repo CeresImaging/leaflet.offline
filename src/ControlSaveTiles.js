@@ -1,6 +1,6 @@
-import L from 'leaflet';
+import L from 'leaflet'
 import geoBox from 'geojson-bbox'
-import localforage from './localforage';
+import localforage from './localforage'
 
 /**
  * Status of ControlSaveTiles, keeps info about process during downloading
@@ -111,6 +111,14 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
   },
 
   /**
+   * set the shape(s) of the area to save
+   *@param {GeoJSON} bounds
+   */
+  setShapes (shapes) {
+    this.options.shapes = shapes
+  },
+
+  /**
    * set saveWhatYouSee
    * @param {boolean} saveWhatYouSee
    */
@@ -178,7 +186,7 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
       const currentZoom = this._map.getZoom()
 
       if (currentZoom < minZoom) {
-        throw new Error('It\'s not possible to save with zoom below level 5.');
+        throw new Error('It\'s not possible to save with zoom below level 5.')
       }
 
       const { maxZoom } = this.options
@@ -294,12 +302,12 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
    * @return {void}         [description]
    */
   _saveTile(tileUrl, blob) {
-    const self = this;
+    const self = this
 
     localforage.removeItem(tileUrl).then(() => {
       localforage.setItem(tileUrl, blob).then(() => {
         self.status.lengthSaved += 1
-        //self.status.lengthProcessed += 1;
+        //self.status.lengthProcessed += 1
         self._baseLayer.fire('savetileend', self.status)
 
         if (self.status.lengthSaved === self.status.lengthToBeSaved) {
@@ -350,4 +358,4 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
 * @property {function} [options.confirmRemoval] function called before confirm, default null
 * @return {ControlSaveTiles}
 */
-L.control.savetiles = (baseLayer, options) => new ControlSaveTiles(baseLayer, options);
+L.control.savetiles = (baseLayer, options) => new ControlSaveTiles(baseLayer, options)

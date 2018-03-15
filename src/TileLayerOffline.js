@@ -2,7 +2,7 @@ import L from 'leaflet'
 import localforage from './localforage'
 import geoBox from 'geojson-bbox'
 import { tileToGeoJSON } from '@mapbox/tilebelt'
-import { shapesIntersect } from './GeoUtils'
+import { shapesIntersect } from './Shapes'
 
 /**
  * A layer that uses store tiles when available. Falls back to online.

@@ -1,5 +1,4 @@
 import L from 'leaflet'
-import geoBox from 'geojson-bbox'
 import localforage from './localforage'
 
 /**
@@ -255,8 +254,6 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
     const tileUrl = self.status._tilesforSave.shift()
     const xhr = new XMLHttpRequest()
 
-    console.log('@@@ loadTile', tileUrl, self.status)
-
     xhr.open('GET', tileUrl.url)
     xhr.responseType = 'blob'
     xhr.send()
@@ -317,7 +314,7 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
       }).catch(error => {
         self._baseLayer.fire('saveerror', { status: self.status, error })
 
-        throw new Error(err)
+        throw new Error(error)
       })
     }).catch(error => {
       throw new Error(error)

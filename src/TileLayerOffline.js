@@ -21,8 +21,6 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
     const tile = L.TileLayer.prototype.createTile.call(this, coords, done)
     const url = tile.src
 
-    tile.src = undefined
-
     this.setDataUrl(tile, url).then((dataUrl) => {
       tile.src = dataUrl
     }).catch(() => {

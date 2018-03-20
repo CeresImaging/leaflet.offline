@@ -11,9 +11,12 @@ export default {
   external: [
     'leaflet',
     'localforage',
+    'geojson-bbox',
+    '@mapbox/tilebelt',
+    '@turf/turf'
   ],
   globals: {
-    localforage: 'localforage',
     leaflet: 'L',
-  },
+    localforage: 'localforage'
+  }
 };

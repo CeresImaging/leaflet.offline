@@ -1,9 +1,10 @@
-import L from 'leaflet';
-import localforage from './localforage';
+import L from 'leaflet'
+import localforage from './localforage'
 
 /**
  * Status of ControlSaveTiles, keeps info about process during downloading
- * ans saving tiles. Used internal and as object for events.
+ * and saving tiles. Used internal and as object for events.
+ *
  * @typedef {Object} ControlStatus
  * @property {number} storagesize total number of saved tiles.
  * @property {number} lengthToBeSaved number of tiles that will be saved in db
@@ -15,11 +16,11 @@ import localforage from './localforage';
 
 
 /**
-* Shows control on map to save tiles
-* @class ControlSaveTiles
-*
-* @property {ControlStatus} status
-*/
+ * Shows control on map to save tiles
+ * @class ControlSaveTiles
+ *
+ * @property {ControlStatus} status
+ */
 const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
   options: {
     position: 'topleft',
@@ -31,6 +32,7 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
     confirm: null,
     confirmRemoval: null,
   },
+
   status: {
     storagesize: null,
     lengthToBeSaved: null,
@@ -40,155 +42,196 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
     lengthFailed: null,
     _tilesforSave: null,
   },
+
   /**
-     * @private
-     * @param  {Object} baseLayer
-     * @param  {Object} options
-     * @return {void}
-     */
-  initialize(baseLayer, options) {
-    this._baseLayer = baseLayer;
-    this.setStorageSize();
-    L.setOptions(this, options);
+   * @private
+   * @param  {Object} baseLayer
+   * @param  {Object} options
+   * @return {void}
+   */
+  initialize (baseLayer, options) {
+    this._baseLayer = baseLayer
+    this.setStorageSize()
+
+    L.setOptions(this, options)
   },
+
   /**
    * Set storagesize prop on object init
    * @param {Function} [callback] receives arg number of saved files
    * @private
    */
-  setStorageSize(callback) {
-    const self = this;
-    if (this.status.storagesize) {
-      callback(this.status.storagesize);
-      return;
+  setStorageSize (callback) {
+    const self = this
+
+    if (this.status.storagesize && callback instanceof Function) {
+      callback(this.status.storagesize)
+
+      return
     }
+
     localforage.length().then((numberOfKeys) => {
-      self.status.storagesize = numberOfKeys;
-      self._baseLayer.fire('storagesize', self.status);
+      self.status.storagesize = numberOfKeys
+      self._baseLayer.fire('storagesize', self.status)
+
       if (callback) {
-        callback(numberOfKeys);
+        callback(numberOfKeys)
       }
     }).catch((err) => {
-      callback(0);
-      throw err;
-    });
+      callback(0)
+
+      throw err
+    })
   },
+
   /**
    * get number of saved files
    * @param  {Function} callback [description]
    * @private
    */
-  getStorageSize(callback) {
-    this.setStorageSize(callback);
+  getStorageSize (callback) {
+    this.setStorageSize(callback)
   },
+
   /**
    * Change baseLayer
    * @param {TileLayerOffline} layer
    */
-  setLayer(layer) {
-    this._baseLayer = layer;
+  setLayer (layer) {
+    this._baseLayer = layer
   },
+
   /**
    * set the bounds of the area to save
    * @param {L.latLngBounds} bounds
    */
-  setBounds(bounds) {
-    this.options.bounds = bounds;
+  setBounds (bounds) {
+    this.options.bounds = bounds
   },
+
+  /**
+   * set the shape(s) of the area to save
+   *@param {GeoJSON} bounds
+   */
+  setShapes (shapes) {
+    this.options.shapes = shapes
+  },
+
   /**
    * set saveWhatYouSee
    * @param {boolean} saveWhatYouSee
    */
-  setSaveWhatYouSee(saveWhatYouSee) {
-    this.options.saveWhatYouSee = saveWhatYouSee;
+  setSaveWhatYouSee (saveWhatYouSee) {
+    this.options.saveWhatYouSee = saveWhatYouSee
   },
+
   /**
    * set the maxZoom
    * @param {number} zoom
    */
-  setMaxZoom(zoom) {
-    this.options.maxZoom = zoom;
+  setMaxZoom (zoom) {
+    this.options.maxZoom = zoom
   },
+
   /**
    * set the zoomLevels
-   * @param {array} zoomlevels min,max
+   * @param {array} zoomLevels min,max
    */
-  setZoomlevels(zoomlevels) {
-    this.options.zoomlevels = zoomlevels;
+  setzoomLevels (zoomLevels) {
+    this.options.zoomLevels = zoomLevels
   },
-  onAdd() {
-    const container = L.DomUtil.create('div', 'savetiles leaflet-bar');
-    const { options } = this;
-    this._createButton(options.saveText, 'savetiles', container, this._saveTiles);
-    this._createButton(options.rmText, 'rmtiles', container, this._rmTiles);
-    return container;
+
+  onAdd () {
+    const container = L.DomUtil.create('div', 'savetiles leaflet-bar')
+    const { options } = this
+
+    this._createButton(options.saveText, 'savetiles', container, this._saveTiles)
+    this._createButton(options.rmText, 'rmtiles', container, this._rmTiles)
+
+    return container
   },
-  _createButton(html, className, container, fn) {
-    const link = L.DomUtil.create('a', className, container);
-    link.innerHTML = html;
-    link.href = '#';
+
+  _createButton (html, className, container, fn) {
+    const link = L.DomUtil.create('a', className, container)
+
+    link.innerHTML = html
+    link.href = '#'
 
     L.DomEvent
       .on(link, 'mousedown dblclick', L.DomEvent.stopPropagation)
       .on(link, 'click', L.DomEvent.stop)
       .on(link, 'click', fn, this)
-      .on(link, 'click', this._refocusOnMap, this);
+      .on(link, 'click', this._refocusOnMap, this)
     // TODO enable disable on layer change map
 
-    return link;
+    return link
   },
+
   /**
    * starts processing tiles
    * @private
    * @return {void}
    */
-  _saveTiles() {
-    let bounds;
-    const self = this;
-    let tiles = [];
+  _saveTiles () {
+    const self = this
     // minimum zoom to prevent the user from saving the whole world
-    const minZoom = 5;
+    const minZoom = 5
+
     // current zoom or zoom options
-    let zoomlevels = [];
+    let zoomLevels = []
+    let tiles = []
 
     if (this.options.saveWhatYouSee) {
-      const currentZoom = this._map.getZoom();
+      const currentZoom = this._map.getZoom()
+
       if (currentZoom < minZoom) {
-        throw new Error('It\'s not possible to save with zoom below level 5.');
+        throw new Error('It\'s not possible to save with zoom below level 5.')
       }
-      const { maxZoom } = this.options;
+
+      const { maxZoom } = this.options
 
       for (let zoom = currentZoom; zoom <= maxZoom; zoom += 1) {
-        zoomlevels.push(zoom);
+        zoomLevels.push(zoom)
       }
     } else {
-      zoomlevels = this.options.zoomlevels || [this._map.getZoom()];
+      zoomLevels = this.options.zoomLevels || [this._map.getZoom()]
     }
 
-    const latlngBounds = this.options.bounds || this._map.getBounds();
+    const bounds = this.options.bounds || this._map.getBounds()
+    const shapes = this.options.shapes
 
-    for (const i in zoomlevels) {
-      bounds = L.bounds(
-        this._map.project(latlngBounds.getNorthWest(), zoomlevels[i]),
-        this._map.project(latlngBounds.getSouthEast(), zoomlevels[i]),
-      );
-      tiles = tiles.concat(this._baseLayer.getTileUrls(bounds, zoomlevels[i]));
+    for (const i in zoomLevels) {
+      const tileUrlFactory = this._baseLayer[shapes ? 'getTileUrlsInShapes' : 'getTileUrls'].bind(this._baseLayer)
+      const tileUrlSource  = shapes || bounds
+      const tileUrls = tileUrlFactory(tileUrlSource, zoomLevels[i])
+
+      tiles = tiles.concat(tileUrls)
     }
-    this._resetStatus(tiles);
-    const succescallback = () => {
-      self._baseLayer.fire('savestart', self.status);
-      const subdlength = self._baseLayer.getSimultaneous();
-      for (let i = 0; i < subdlength; i += 1) {
-        self._loadTile();
+
+    this._resetStatus(tiles)
+
+    const successCallback = () => {
+      self._baseLayer.fire('savestart', self.status)
+
+      const subdLength = self._baseLayer.getSimultaneous()
+
+      for (let i = 0; i < subdLength; i += 1) {
+        self._loadTile()
       }
     };
     if (this.options.confirm) {
-      this.options.confirm(this.status, succescallback);
+      this.options.confirm(this.status, successCallback)
     } else {
-      succescallback();
+      successCallback()
     }
   },
-  _resetStatus(tiles) {
+
+  cancel () {
+    this._baseLayer.fire('savecancelled', self.status)
+    this._resetStatus()
+  },
+
+  _resetStatus (tiles = []) {
     this.status = {
       lengthLoaded: 0,
       lengthProcessed: 0,
@@ -196,8 +239,9 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
       lengthToBeSaved: tiles.length,
       lengthSaved: 0,
       _tilesforSave: tiles,
-    };
+    }
   },
+
   /**
    * Loop over status._tilesforSave prop till all tiles are downloaded
    * Calls _saveTile for each download
@@ -205,46 +249,48 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
    * @param  {string} tileUrl
    * @return {void}
    */
-  _loadTile() {
-    const self = this;
-    const tileUrl = self.status._tilesforSave.shift();
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', tileUrl.url);
-    xhr.responseType = 'blob';
-    xhr.send();
+  _loadTile () {
+    const self = this
+    const tileUrl = self.status._tilesforSave.shift()
+    const xhr = new XMLHttpRequest()
+
+    xhr.open('GET', tileUrl.url)
+    xhr.responseType = 'blob'
+    xhr.send()
     xhr.onreadystatechange = () => {
       if (xhr.readyState === XMLHttpRequest.DONE) {
         if (xhr.status === 200) {
-          console.log('[leaflet.offline] TILE LOADED')
-          self.status.lengthLoaded += 1;
-          self.status.lengthProcessed += 1;
-          self._saveTile(tileUrl.key, xhr.response);
+          self.status.lengthLoaded += 1
+          self.status.lengthProcessed += 1
+          self._saveTile(tileUrl.key, xhr.response)
+
           if (self.status._tilesforSave.length > 0) {
-            self._loadTile();
-            self._baseLayer.fire('loadtileend', self.status);
+            self._loadTile()
+            self._baseLayer.fire('loadtileend', self.status)
           } else {
-            self._baseLayer.fire('loadtileend', self.status);
-            // TODO: might need to chagne this to `lengthProcessed`
-            // if (self.status.lengthLoaded === self.status.lengthToBeSaved) {
+            self._baseLayer.fire('loadtileend', self.status)
+
             if (self.status.lengthProcessed === self.status.lengthToBeSaved) {
-              self._baseLayer.fire('loadend', self.status);
+              self._baseLayer.fire('loadend', self.status)
             }
           }
         }
 
         if (xhr.status >= 400) {
-          console.log('[leaflet.offline] TILE FAILED!!!')
-          self.status.lengthProcessed += 1;
-          self.status.lengthFailed += 1;
-          self._baseLayer.fire('loadtilefailed', self.status);
+          self.status.lengthProcessed += 1
+          self.status.lengthFailed += 1
+
+          self._baseLayer.fire('loadtilefailed', self.status)
+
           if (self.status._tilesforSave.length > 0) {
-            self._loadTile();
-            self._baseLayer.fire('loadtileend', self.status);
+            self._loadTile()
+            self._baseLayer.fire('loadtileend', self.status)
           }
         }
       }
-    };
+    }
   },
+
   /**
    * [_saveTile description]
    * @private
@@ -252,40 +298,47 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
    * @param  {blob} blob    [description]
    * @return {void}         [description]
    */
-  _saveTile(tileUrl, blob) {
-    const self = this;
+  _saveTile (tileUrl, blob) {
+    const self = this
+
     localforage.removeItem(tileUrl).then(() => {
       localforage.setItem(tileUrl, blob).then(() => {
-        self.status.lengthSaved += 1;
-        self.status.lengthProcessed += 1;
-        self._baseLayer.fire('savetileend', self.status);
+        self.status.lengthSaved += 1
+        //self.status.lengthProcessed += 1
+        self._baseLayer.fire('savetileend', self.status)
+
         if (self.status.lengthSaved === self.status.lengthToBeSaved) {
-          self._baseLayer.fire('saveend', self.status);
-          self.setStorageSize();
+          self._baseLayer.fire('saveend', self.status)
+          self.setStorageSize()
         }
-      }).catch((err) => {
-        throw new Error(err);
-      });
-    }).catch((err) => {
-      throw new Error(err);
-    });
+      }).catch(error => {
+        self._baseLayer.fire('saveerror', { status: self.status, error })
+
+        throw new Error(error)
+      })
+    }).catch(error => {
+      throw new Error(error)
+    })
   },
-  _rmTiles() {
-    const self = this;
+
+  _rmTiles () {
+    const self = this
     const successCallback = () => {
       localforage.clear().then(() => {
-        self.status.storagesize = 0;
-        self._baseLayer.fire('tilesremoved');
-        self._baseLayer.fire('storagesize', self.status);
-      });
-    };
+        self.status.storagesize = 0
+        self._baseLayer.fire('tilesremoved')
+        self._baseLayer.fire('storagesize', self.status)
+      })
+    }
+
     if (this.options.confirmRemoval) {
-      this.options.confirmRemoval(this.status, successCallback);
+      this.options.confirmRemoval(this.status, successCallback)
     } else {
-      successCallback();
+      successCallback()
     }
   },
-});
+})
+
 /**
 * @function L.control.savetiles
 * @param  {object} baseLayer     {@link http://leafletjs.com/reference-1.2.0.html#tilelayer}
@@ -302,13 +355,4 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
 * @property {function} [options.confirmRemoval] function called before confirm, default null
 * @return {ControlSaveTiles}
 */
-
-console.log('[leaflet.offline] BINDING SAVE TILEZ!!! @@@@@')
-
-// FIXME: in 1.0.X this doesn't share the global Leaflet properly
-//  - probably a `webpack` thing
-//  - @see https://github.com/webpack/docs/wiki/shimming-modules
-// L.control.savetiles = (baseLayer, options) => new ControlSaveTiles(baseLayer, options);
-L.control.savetiles = savetiles
-
-console.log('[leaflet.offline] BOUND SAVE TIEZ', L.control.savetiles)
+L.control.savetiles = (baseLayer, options) => new ControlSaveTiles(baseLayer, options)

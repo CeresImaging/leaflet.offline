@@ -531,6 +531,8 @@ var ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
   cancel: function cancel () {
     this._baseLayer.fire('savecancelled', self.status);
     this._resetStatus();
+
+    this.status.cancelled = true;
   },
 
   /**

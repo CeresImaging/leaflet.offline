@@ -265,8 +265,10 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
    * @return {void}
    */
   _loadTile () {
-    if (this.status.cancelled) return
+    console.log('LOADING TILE', this.status)
 
+    if (this.status.cancelled) return
+    
     const self = this
     const tileUrl = self.status._tilesforSave.shift()
     const xhr = new XMLHttpRequest()

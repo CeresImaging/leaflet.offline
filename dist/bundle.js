@@ -529,7 +529,6 @@ var ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
    * @return {void}
    */
   cancel: function cancel () {
-    console.log('CANCELLING');
     this._baseLayer.fire('savecancelled', self.status);
     this._resetStatus();
 
@@ -564,10 +563,8 @@ var ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
    * @return {void}
    */
   _loadTile: function _loadTile () {
-    console.log('LOADING TILE', this.status);
-
     if (this.status.cancelled) { return }
-    
+
     var self = this;
     var tileUrl = self.status._tilesforSave.shift();
     var xhr = new XMLHttpRequest();

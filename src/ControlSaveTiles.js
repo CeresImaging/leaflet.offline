@@ -40,6 +40,7 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
     lengthLoaded: null,
     lengthProcessed: null,
     lengthFailed: null,
+    cancelled: false,
     _tilesforSave: null,
   },
 
@@ -72,6 +73,7 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
 
     localforage.length().then((numberOfKeys) => {
       self.status.storagesize = numberOfKeys
+
       self._baseLayer.fire('storagesize', self.status)
 
       if (callback) {
@@ -86,6 +88,7 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
 
   /**
    * get number of saved files
+
    * @param  {Function} callback [description]
    * @private
    */
@@ -218,7 +221,8 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
       for (let i = 0; i < subdLength; i += 1) {
         self._loadTile()
       }
-    };
+    }
+
     if (this.options.confirm) {
       this.options.confirm(this.status, successCallback)
     } else {
@@ -226,11 +230,23 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
     }
   },
 
+  /**
+   * aborts the tile download process
+   * @return {void}
+   */
   cancel () {
     this._baseLayer.fire('savecancelled', self.status)
     this._resetStatus()
+
+    this.status.cancelled = true
   },
 
+  /**
+   * resets the status of the download session
+   * @private
+   * @param  {Array<string>} list of tiles to refresh session with
+   * @return {void}
+   */
   _resetStatus (tiles = []) {
     this.status = {
       lengthLoaded: 0,
@@ -238,6 +254,7 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
       lengthFailed: 0,
       lengthToBeSaved: tiles.length,
       lengthSaved: 0,
+      cancelled: false,
       _tilesforSave: tiles,
     }
   },
@@ -250,6 +267,8 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
    * @return {void}
    */
   _loadTile () {
+    if (this.status.cancelled) return
+
     const self = this
     const tileUrl = self.status._tilesforSave.shift()
     const xhr = new XMLHttpRequest()
@@ -262,6 +281,7 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
         if (xhr.status === 200) {
           self.status.lengthLoaded += 1
           self.status.lengthProcessed += 1
+
           self._saveTile(tileUrl.key, xhr.response)
 
           if (self.status._tilesforSave.length > 0) {
@@ -292,11 +312,11 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
   },
 
   /**
-   * [_saveTile description]
+   * saves a loaded tile using localforage
    * @private
    * @param  {string} tileUrl save key
-   * @param  {blob} blob    [description]
-   * @return {void}         [description]
+   * @param  {blob} blob binary representation of tile image
+   * @return {void}
    */
   _saveTile (tileUrl, blob) {
     const self = this
@@ -321,6 +341,11 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
     })
   },
 
+  /**
+   * removes all saves tiles from localforage
+   * @private
+   * @return {void}
+   */
   _rmTiles () {
     const self = this
     const successCallback = () => {

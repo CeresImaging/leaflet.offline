@@ -330,6 +330,7 @@ var ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
     lengthLoaded: null,
     lengthProcessed: null,
     lengthFailed: null,
+    cancelled: false,
     _tilesforSave: null,
   },
 
@@ -362,6 +363,7 @@ var ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
 
     localforage.length().then(function (numberOfKeys) {
       self.status.storagesize = numberOfKeys;
+
       self._baseLayer.fire('storagesize', self.status);
 
       if (callback) {
@@ -376,6 +378,7 @@ var ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
 
   /**
    * get number of saved files
+
    * @param  {Function} callback [description]
    * @private
    */
@@ -513,6 +516,7 @@ var ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
         self._loadTile();
       }
     };
+
     if (this.options.confirm) {
       this.options.confirm(this.status, successCallback);
     } else {
@@ -520,11 +524,23 @@ var ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
     }
   },
 
+  /**
+   * aborts the tile download process
+   * @return {void}
+   */
   cancel: function cancel () {
     this._baseLayer.fire('savecancelled', self.status);
     this._resetStatus();
+
+    this.status.cancelled = true;
   },
 
+  /**
+   * resets the status of the download session
+   * @private
+   * @param  {Array<string>} list of tiles to refresh session with
+   * @return {void}
+   */
   _resetStatus: function _resetStatus (tiles) {
     if ( tiles === void 0 ) tiles = [];
 
@@ -534,6 +550,7 @@ var ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
       lengthFailed: 0,
       lengthToBeSaved: tiles.length,
       lengthSaved: 0,
+      cancelled: false,
       _tilesforSave: tiles,
     };
   },
@@ -546,6 +563,8 @@ var ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
    * @return {void}
    */
   _loadTile: function _loadTile () {
+    if (this.status.cancelled) { return }
+
     var self = this;
     var tileUrl = self.status._tilesforSave.shift();
     var xhr = new XMLHttpRequest();
@@ -558,6 +577,7 @@ var ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
         if (xhr.status === 200) {
           self.status.lengthLoaded += 1;
           self.status.lengthProcessed += 1;
+
           self._saveTile(tileUrl.key, xhr.response);
 
           if (self.status._tilesforSave.length > 0) {
@@ -588,11 +608,11 @@ var ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
   },
 
   /**
-   * [_saveTile description]
+   * saves a loaded tile using localforage
    * @private
    * @param  {string} tileUrl save key
-   * @param  {blob} blob    [description]
-   * @return {void}         [description]
+   * @param  {blob} blob binary representation of tile image
+   * @return {void}
    */
   _saveTile: function _saveTile (tileUrl, blob) {
     var self = this;
@@ -617,6 +637,11 @@ var ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
     });
   },
 
+  /**
+   * removes all saves tiles from localforage
+   * @private
+   * @return {void}
+   */
   _rmTiles: function _rmTiles () {
     var self = this;
     var successCallback = function () {

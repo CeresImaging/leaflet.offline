@@ -53,7 +53,7 @@
   },
   "dependencies": {
     "@mapbox/tilebelt": "^1.0.1",
-    "@turf/turf": "^5.1.6",
+    "@turf/turf": "3.9.0",
     "geojson-bbox": "0.0.0",
     "leaflet": "^1.2.0",
     "localforage": "^1.5.5"

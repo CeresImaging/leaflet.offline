@@ -4,6 +4,7 @@ import turf from '@turf/turf'
  * Determines if a set of coordinates reside within a GeoJSON shape
  */
 export function coordsIntersectPolygon (coords, shape) {
+  console.log('[leaflet.offline] coords intersect polygon (coords, shape)', coords, shape)
   const point = turf.point(coords)
 
   return turf.inside(point, shape)

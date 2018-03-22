@@ -18,15 +18,10 @@ localforage.config({
   description: 'the tiles',
 });
 
-// import turf from '@turf/turf'
 /**
  * Determines if a set of coordinates reside within a GeoJSON shape
  */
 function coordsIntersectPolygon (coords, shape) {
-  // const point = turf.point(coords)
-
-  // return turf.inside(point, shape)
-
   var point = turfPoint(coords);
 
   return isPointInPolygon(point, shape)

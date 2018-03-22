@@ -1,4 +1,3 @@
-// import turf from '@turf/turf'
 import turfPoint from 'turf-point'
 import isPointInPolygon from '@turf/boolean-point-in-polygon'
 
@@ -6,10 +5,6 @@ import isPointInPolygon from '@turf/boolean-point-in-polygon'
  * Determines if a set of coordinates reside within a GeoJSON shape
  */
 export function coordsIntersectPolygon (coords, shape) {
-  // const point = turf.point(coords)
-
-  // return turf.inside(point, shape)
-
   const point = turfPoint(coords)
 
   return isPointInPolygon(point, shape)

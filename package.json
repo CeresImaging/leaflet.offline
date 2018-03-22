@@ -53,9 +53,10 @@
   },
   "dependencies": {
     "@mapbox/tilebelt": "^1.0.1",
-    "@turf/turf": "^5.1.6",
+    "@turf/boolean-point-in-polygon": "^6.0.0",
     "geojson-bbox": "0.0.0",
     "leaflet": "^1.2.0",
-    "localforage": "^1.5.5"
+    "localforage": "^1.5.5",
+    "turf-point": "^2.0.1"
   }
 }

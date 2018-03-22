@@ -1,13 +1,14 @@
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? factory(require('leaflet'), require('localforage'), require('geojson-bbox'), require('@mapbox/tilebelt'), require('@turf/turf')) :
-	typeof define === 'function' && define.amd ? define(['leaflet', 'localforage', 'geojson-bbox', '@mapbox/tilebelt', '@turf/turf'], factory) :
-	(factory(global.L,global.localforage,global.geoBox,global.tilebelt,global.turf));
-}(this, (function (L,localforage,geoBox,tilebelt,turf) { 'use strict';
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(require('leaflet'), require('localforage'), require('geojson-bbox'), require('@mapbox/tilebelt'), require('turf-point'), require('@turf/boolean-point-in-polygon')) :
+	typeof define === 'function' && define.amd ? define(['leaflet', 'localforage', 'geojson-bbox', '@mapbox/tilebelt', 'turf-point', '@turf/boolean-point-in-polygon'], factory) :
+	(factory(global.L,global.localforage,global.geoBox,global.tilebelt,global.turfPoint,global.isPointInPolygon));
+}(this, (function (L,localforage,geoBox,tilebelt,turfPoint,isPointInPolygon) { 'use strict';
 
 L = L && L.hasOwnProperty('default') ? L['default'] : L;
 localforage = localforage && localforage.hasOwnProperty('default') ? localforage['default'] : localforage;
 geoBox = geoBox && geoBox.hasOwnProperty('default') ? geoBox['default'] : geoBox;
-turf = turf && turf.hasOwnProperty('default') ? turf['default'] : turf;
+turfPoint = turfPoint && turfPoint.hasOwnProperty('default') ? turfPoint['default'] : turfPoint;
+isPointInPolygon = isPointInPolygon && isPointInPolygon.hasOwnProperty('default') ? isPointInPolygon['default'] : isPointInPolygon;
 
 localforage.config({
   name: 'leaflet_offline',
@@ -21,9 +22,9 @@ localforage.config({
  * Determines if a set of coordinates reside within a GeoJSON shape
  */
 function coordsIntersectPolygon (coords, shape) {
-  var point = turf.point(coords);
+  var point = turfPoint(coords);
 
-  return turf.inside(point, shape)
+  return isPointInPolygon(point, shape)
 }
 
 /**

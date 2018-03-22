@@ -13,7 +13,9 @@ export default {
     'localforage',
     'geojson-bbox',
     '@mapbox/tilebelt',
-    '@turf/turf'
+    '@turf/turf',
+    '@turf/boolean-point-in-polygon',
+    'turf-point'
   ],
   globals: {
     leaflet: 'L',

@@ -222,8 +222,8 @@ var TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
 
           var tileCoords = tileShape.coordinates[0];
 
-          if (tileCoords.length > 4 && tileCoords[tileCoords.length - 1] === tileCoords[tileCoords.length - 2])
-            { tileShape.coordinates[0].pop(); }
+          // if (tileCoords.length > 4 && tileCoords[tileCoords.length - 1] === tileCoords[tileCoords.length - 2])
+            tileShape.coordinates[0].pop();
 
           var tileIntersects = shapesIntersect(tileShape, shape);
 

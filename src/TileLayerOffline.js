@@ -156,7 +156,7 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
 
           const tileCoords = tileShape.coordinates[0]
 
-          if (tileCoords.length > 4 && tileCoords[tileCoords.length - 1] === tileCoords[tileCoords.length - 2])
+          // if (tileCoords.length > 4 && tileCoords[tileCoords.length - 1] === tileCoords[tileCoords.length - 2])
             tileShape.coordinates[0].pop()
 
           const tileIntersects = shapesIntersect(tileShape, shape)

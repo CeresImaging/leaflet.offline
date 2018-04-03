@@ -24,6 +24,8 @@ localforage.config({
 function coordsIntersectPolygon (coords, shape) {
   var point = turfPoint(coords);
 
+  console.log('[leaflet.offline] ~~~ coords in shape?', coords, shape, isPointInPolygon(point, shape));
+
   return isPointInPolygon(point, shape)
 }
 

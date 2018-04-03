@@ -195,6 +195,8 @@ var TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
     this.setUrl(this._url.replace('{z}', zoom), true);
 
     geometries.forEach(function (shape) {
+      L.geoJSON(shape, { style: { color: 'yellow' } }).addTo(this$1._map);
+
       var boundCoords = geoBox(shape);
       var boundLatLngs = new L.latLngBounds(L.GeoJSON.coordsToLatLngs([
         [boundCoords[0], boundCoords[1]],

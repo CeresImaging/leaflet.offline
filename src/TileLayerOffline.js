@@ -131,6 +131,8 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
     this.setUrl(this._url.replace('{z}', zoom), true)
 
     geometries.forEach(shape => {
+      L.geoJSON(shape, { style: { color: 'yellow' } }).addTo(this._map)
+
       const boundCoords = geoBox(shape)
       const boundLatLngs = new L.latLngBounds(L.GeoJSON.coordsToLatLngs([
         [boundCoords[0], boundCoords[1]],

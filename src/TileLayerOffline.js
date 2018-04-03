@@ -156,6 +156,8 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
           if (tileIntersects) {
             const url = L.TileLayer.prototype.getTileUrl.call(this, tilePoint)
 
+            L.geoJSON(tileShape, { style: { color: 'teal' } }).addTo(this._map)
+
             tiles.push({
               key: this._getStorageKey(url),
               url,

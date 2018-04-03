@@ -219,7 +219,12 @@ var TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
         for (var i = tileBounds.min.x; i <= tileBounds.max.x; i += 1) {
           var tilePoint = new L.Point(i, j);
           var tileShape = tilebelt.tileToGeoJSON([tilePoint.x, tilePoint.y, zoom]);
-          tileShape.coordinates.pop(); // EXPERIMENT (next detect if last element and 2nd to last element equal the first element)
+
+          var tileCoords = tileShape.coordinates;
+
+          if (tileCoords.length > 4 && tileCoords[tileCoords.length - 1] === tileCoords[tileCoords.length - 2])
+            { tileShape.coordinates.pop(); }
+
           var tileIntersects = shapesIntersect(tileShape, shape);
 
           L.geoJSON(tileShape, { style: { color: 'pink' } }).addTo(this$1._map);

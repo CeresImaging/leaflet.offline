@@ -232,6 +232,8 @@ var TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
     // restore url
     this.setUrl(origUrl, true);
 
+    console.log('[leaflet.offline] returning tiles for zoom level', zoom, tiles.length);
+
     return tiles
   }
 });

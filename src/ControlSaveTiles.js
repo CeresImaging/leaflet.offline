@@ -200,6 +200,8 @@ const ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
       zoomLevels = this.options.zoomLevels || [this._map.getZoom()]
     }
 
+    console.log('[leaflet.offline] saving tiles at zoom levels', zoomLevels)
+
     const bounds = this.options.bounds || this._map.getBounds()
     const shapes = this.options.shapes
 

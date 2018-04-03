@@ -126,6 +126,8 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
     const origUrl = this._url
     const geometries = shapes instanceof Array ? shapes : [shapes]
 
+    console.log('[leaflet.offline] getting tile urls for zoom level', zoom, geometries)
+
     this.setUrl(this._url.replace('{z}', zoom), true)
 
     geometries.forEach(shape => {

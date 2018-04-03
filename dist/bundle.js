@@ -190,6 +190,8 @@ var TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
     var origUrl = this._url;
     var geometries = shapes instanceof Array ? shapes : [shapes];
 
+    console.log('[leaflet.offline] getting tile urls for zoom level', zoom, geometries);
+
     this.setUrl(this._url.replace('{z}', zoom), true);
 
     geometries.forEach(function (shape) {
@@ -494,6 +496,8 @@ var ControlSaveTiles = L.Control.extend(/** @lends ControlSaveTiles */ {
     } else {
       zoomLevels = this.options.zoomLevels || [this._map.getZoom()];
     }
+
+    console.log('[leaflet.offline] saving tiles at zoom levels', zoomLevels);
 
     var bounds = this.options.bounds || this._map.getBounds();
     var shapes = this.options.shapes;

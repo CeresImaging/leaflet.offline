@@ -155,7 +155,7 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
           const tileShape = tileToGeoJSON([tilePoint.x, tilePoint.y, zoom])
           const tileIntersects = shapesIntersect(tileShape, shape)
 
-          L.geoJSON(tileShape, { style: { color: 'red' } }).addTo(this._map)
+          L.geoJSON(tileShape, { style: { color: 'pink' } }).addTo(this._map)
 
           if (tileIntersects) {
             const url = L.TileLayer.prototype.getTileUrl.call(this, tilePoint)

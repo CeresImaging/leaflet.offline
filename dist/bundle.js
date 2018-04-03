@@ -220,10 +220,10 @@ var TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
           var tilePoint = new L.Point(i, j);
           var tileShape = tilebelt.tileToGeoJSON([tilePoint.x, tilePoint.y, zoom]);
 
-          var tileCoords = tileShape.coordinates;
+          var tileCoords = tileShape.coordinates[0];
 
           if (tileCoords.length > 4 && tileCoords[tileCoords.length - 1] === tileCoords[tileCoords.length - 2])
-            { tileShape.coordinates.pop(); }
+            { tileShape.coordinates[0].pop(); }
 
           var tileIntersects = shapesIntersect(tileShape, shape);
 

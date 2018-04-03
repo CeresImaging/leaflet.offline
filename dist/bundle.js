@@ -219,6 +219,8 @@ var TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
           var tileShape = tilebelt.tileToGeoJSON([tilePoint.x, tilePoint.y, zoom]);
           var tileIntersects = shapesIntersect(tileShape, shape);
 
+          L.geoJSON(tileShape, { style: { color: 'red' } }).addTo(this$1._map);
+
           if (tileIntersects) {
             var url = L.TileLayer.prototype.getTileUrl.call(this$1, tilePoint);
 

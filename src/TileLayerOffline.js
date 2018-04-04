@@ -157,13 +157,13 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
 
           if (tileIntersects) {
             const url = L.TileLayer.prototype.getTileUrl.call(this, tilePoint)
+            const tile = { key: this._getStorageKey(url), url }
 
-            L.geoJSON(tileShape, { style: { color: 'teal' } }).addTo(this._map)
+            if (!tiles.find(t => t.key === tile.key)) {
+              L.geoJSON(tileShape, { style: { color: 'teal' } }).addTo(this._map)
 
-            tiles.push({
-              key: this._getStorageKey(url),
-              url,
-            })
+              tiles.push(tile)
+            }
           }
         }
       }

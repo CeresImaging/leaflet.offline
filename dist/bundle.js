@@ -221,13 +221,13 @@ var TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
 
           if (tileIntersects) {
             var url = L.TileLayer.prototype.getTileUrl.call(this$1, tilePoint);
+            var tile = { key: this$1._getStorageKey(url), url: url };
 
-            L.geoJSON(tileShape, { style: { color: 'teal' } }).addTo(this$1._map);
+            if (!tiles.find(function (t) { return t.key === tile.key; })) {
+              L.geoJSON(tileShape, { style: { color: 'teal' } }).addTo(this$1._map);
 
-            tiles.push({
-              key: this$1._getStorageKey(url),
-              url: url,
-            });
+              tiles.push(tile);
+            }
           }
         }
       }

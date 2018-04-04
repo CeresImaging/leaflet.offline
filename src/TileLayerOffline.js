@@ -149,15 +149,16 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
         for (let i = tileBounds.min.x; i <= tileBounds.max.x; i += 1) {
           const tilePoint = new L.Point(i, j)
           const tileShape = tileToGeoJSON([tilePoint.x, tilePoint.y, zoom])
-          const tileIntersects = shapesIntersect(tileShape, shape)
+          const tileIntersects = shapesIntersect(tileShape, shape) || shapesIntersect(shape, tileShape)
 
           if (tileIntersects) {
             const url = L.TileLayer.prototype.getTileUrl.call(this, tilePoint)
+            const tile = { key: this._getStorageKey(url), url }
+            const known = tiles.find(t => t.key === tile.key)
 
-            tiles.push({
-              key: this._getStorageKey(url),
-              url,
-            })
+            if (!known) {
+              tiles.push(tile)
+            }
           }
         }
       }

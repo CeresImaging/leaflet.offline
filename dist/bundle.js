@@ -45,7 +45,7 @@ function shapesIntersect (shape1, shape2) {
     return shape1.coordinates.some(function (coord1) {
       return coord1.some(function (coord2) {
         return coord2.some(function (coord3) {
-          return coordsIntersect(coord3, shape2)
+          return coordsIntersectPolygon(coord3, shape2)
         })
       })
     })
@@ -219,13 +219,8 @@ var TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
         for (var i = tileBounds.min.x; i <= tileBounds.max.x; i += 1) {
           var tilePoint = new L.Point(i, j);
           var tileShape = tilebelt.tileToGeoJSON([tilePoint.x, tilePoint.y, zoom]);
-
-          var tileCoords = tileShape.coordinates[0];
-
-          // if (tileCoords.length > 4 && tileCoords[tileCoords.length - 1] === tileCoords[tileCoords.length - 2])
-            tileShape.coordinates[0].pop();
-
-          var tileIntersects = shapesIntersect(tileShape, shape);
+          // const tileIntersects = shapesIntersect(tileShape, shape)
+          var tileIntersects = shapesIntersect(shape, tileShape);
 
           L.geoJSON(tileShape, { style: { color: 'pink' } }).addTo(this$1._map);
 

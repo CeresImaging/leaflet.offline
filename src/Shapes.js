@@ -9,7 +9,7 @@ export function coordsIntersectPolygon (coords, shape) {
 
   console.log('[leaflet.offline] ~~~ coords in shape?', coords, shape, isPointInPolygon(point, shape))
 
-  return isPointInPolygon(point, shape) || isPointInPolygon(shape, point)
+  return isPointInPolygon(point, shape)
 }
 
 /**

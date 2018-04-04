@@ -26,7 +26,7 @@ function coordsIntersectPolygon (coords, shape) {
 
   console.log('[leaflet.offline] ~~~ coords in shape?', coords, shape, isPointInPolygon(point, shape));
 
-  return isPointInPolygon(point, shape) || isPointInPolygon(shape, point)
+  return isPointInPolygon(point, shape)
 }
 
 /**
@@ -219,8 +219,9 @@ var TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
         for (var i = tileBounds.min.x; i <= tileBounds.max.x; i += 1) {
           var tilePoint = new L.Point(i, j);
           var tileShape = tilebelt.tileToGeoJSON([tilePoint.x, tilePoint.y, zoom]);
-          var tileIntersects = shapesIntersect(tileShape, shape);
+          // const tileIntersects = shapesIntersect(tileShape, shape)
           // const tileIntersects = shapesIntersect(shape, tileShape)
+          var tileIntersects = shapesIntersect(tileShape, shape) || shapesIntersect(shape, tileShape);
 
           // L.geoJSON(tileShape, { style: { color: 'pink' } }).addTo(this._map)
 

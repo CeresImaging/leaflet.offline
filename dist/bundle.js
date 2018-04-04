@@ -24,8 +24,6 @@ localforage.config({
 function coordsIntersectPolygon (coords, shape) {
   var point = turfPoint(coords);
 
-  console.log('[leaflet.offline] ~~~ coords in shape?', coords, shape, isPointInPolygon(point, shape));
-
   return isPointInPolygon(point, shape)
 }
 
@@ -219,11 +217,7 @@ var TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
         for (var i = tileBounds.min.x; i <= tileBounds.max.x; i += 1) {
           var tilePoint = new L.Point(i, j);
           var tileShape = tilebelt.tileToGeoJSON([tilePoint.x, tilePoint.y, zoom]);
-          // const tileIntersects = shapesIntersect(tileShape, shape)
-          // const tileIntersects = shapesIntersect(shape, tileShape)
           var tileIntersects = shapesIntersect(tileShape, shape) || shapesIntersect(shape, tileShape);
-
-          // L.geoJSON(tileShape, { style: { color: 'pink' } }).addTo(this._map)
 
           if (tileIntersects) {
             var url = L.TileLayer.prototype.getTileUrl.call(this$1, tilePoint);

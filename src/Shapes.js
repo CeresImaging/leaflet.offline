@@ -7,8 +7,6 @@ import isPointInPolygon from '@turf/boolean-point-in-polygon'
 export function coordsIntersectPolygon (coords, shape) {
   const point = turfPoint(coords)
 
-  console.log('[leaflet.offline] ~~~ coords in shape?', coords, shape, isPointInPolygon(point, shape))
-
   return isPointInPolygon(point, shape)
 }
 

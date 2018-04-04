@@ -28,7 +28,7 @@ export function shapesIntersect (shape1, shape2) {
     return shape1.coordinates.some(coord1 => {
       return coord1.some(coord2 => {
         return coord2.some(coord3 => {
-          return coordsIntersect(coord3, shape2)
+          return coordsIntersectPolygon(coord3, shape2)
         })
       })
     })

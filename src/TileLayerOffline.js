@@ -154,8 +154,9 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
           if (tileIntersects) {
             const url = L.TileLayer.prototype.getTileUrl.call(this, tilePoint)
             const tile = { key: this._getStorageKey(url), url }
+            const known = tiles.find(t => t.key === tile.key)
 
-            if (!tiles.find(t => t.key === tile.key)) {
+            if (!known) {
               tiles.push(tile)
             }
           }

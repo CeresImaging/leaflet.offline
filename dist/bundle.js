@@ -218,8 +218,9 @@ var TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
           if (tileIntersects) {
             var url = L.TileLayer.prototype.getTileUrl.call(this$1, tilePoint);
             var tile = { key: this$1._getStorageKey(url), url: url };
+            var known = tiles.find(function (t) { return t.key === tile.key; });
 
-            if (!tiles.find(function (t) { return t.key === tile.key; })) {
+            if (!known) {
               tiles.push(tile);
             }
           }

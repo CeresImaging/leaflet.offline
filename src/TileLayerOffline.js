@@ -153,12 +153,6 @@ const TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
         for (let i = tileBounds.min.x; i <= tileBounds.max.x; i += 1) {
           const tilePoint = new L.Point(i, j)
           const tileShape = tileToGeoJSON([tilePoint.x, tilePoint.y, zoom])
-
-          const tileCoords = tileShape.coordinates[0]
-
-          // if (tileCoords.length > 4 && tileCoords[tileCoords.length - 1] === tileCoords[tileCoords.length - 2])
-            tileShape.coordinates[0].pop()
-
           const tileIntersects = shapesIntersect(tileShape, shape)
 
           L.geoJSON(tileShape, { style: { color: 'pink' } }).addTo(this._map)

@@ -2,15 +2,15 @@
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(require('leaflet'), require('localforage'), require('geojson-bbox'), require('@mapbox/tilebelt'), require('turf-point'), require('@turf/boolean-point-in-polygon')) :
 	typeof define === 'function' && define.amd ? define(['leaflet', 'localforage', 'geojson-bbox', '@mapbox/tilebelt', 'turf-point', '@turf/boolean-point-in-polygon'], factory) :
 	(factory(global.L,global.localforage,global.geoBox,global.tilebelt,global.turfPoint,global.isPointInPolygon));
-}(this, (function (L,localforage,geoBox,tilebelt,turfPoint,isPointInPolygon) { 'use strict';
+}(this, (function (L,lf,geoBox,tilebelt,turfPoint,isPointInPolygon) { 'use strict';
 
 L = L && L.hasOwnProperty('default') ? L['default'] : L;
-localforage = localforage && localforage.hasOwnProperty('default') ? localforage['default'] : localforage;
+lf = lf && lf.hasOwnProperty('default') ? lf['default'] : lf;
 geoBox = geoBox && geoBox.hasOwnProperty('default') ? geoBox['default'] : geoBox;
 turfPoint = turfPoint && turfPoint.hasOwnProperty('default') ? turfPoint['default'] : turfPoint;
 isPointInPolygon = isPointInPolygon && isPointInPolygon.hasOwnProperty('default') ? isPointInPolygon['default'] : isPointInPolygon;
 
-localforage.config({
+var localforage = lf.createInstance({
   name: 'leaflet_offline',
   version: 1.0,
   size: 4980736,
